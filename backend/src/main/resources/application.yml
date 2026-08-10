@@ -1,0 +1,34 @@
+server:
+  port: ${PORT:8080}
+
+spring:
+  application:
+    name: booknook-backend
+  autoconfigure:
+    exclude:
+      # Auth is entirely Firebase-token-based (see security package) — no in-memory
+      # UserDetailsService is needed, and leaving this enabled just logs a confusing
+      # generated-password warning on every boot.
+      - org.springframework.boot.autoconfigure.security.servlet.UserDetailsServiceAutoConfiguration
+
+booknook:
+  cors:
+    allowed-origin: ${ALLOWED_ORIGIN:http://localhost:5173}
+  firebase:
+    project-id: ${FIREBASE_PROJECT_ID:}
+    # Absolute path to the downloaded service-account JSON file (see README).
+    credentials-path: ${FIREBASE_CREDENTIALS_PATH:}
+  hardcover:
+    api-key: ${HARDCOVER_API_KEY:}
+    graphql-url: ${HARDCOVER_GRAPHQL_URL:https://api.hardcover.app/v1/graphql}
+  push:
+    vapid-public-key: ${VAPID_PUBLIC_KEY:}
+    vapid-private-key: ${VAPID_PRIVATE_KEY:}
+    # Contact address required by the Web Push protocol, e.g. mailto:you@example.com
+    vapid-subject: ${VAPID_SUBJECT:mailto:admin@example.com}
+  series-cache:
+    ttl-hours: ${SERIES_CACHE_TTL_HOURS:24}
+
+logging:
+  level:
+    com.booknook.backend: INFO

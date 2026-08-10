@@ -1,0 +1,65 @@
+.bookshelf {
+  display: flex;
+  flex-direction: column;
+  gap: 28px;
+  padding: 20px;
+  background: linear-gradient(180deg, var(--color-wood-light), var(--color-wood));
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+}
+
+.bookshelf__row {
+  display: flex;
+  flex-direction: column;
+}
+
+.bookshelf__spines {
+  display: flex;
+  align-items: flex-end;
+  gap: 4px;
+  min-height: 70px;
+  padding: 0 8px;
+}
+
+.bookshelf__spine {
+  width: 26px;
+  border-radius: 2px 2px 0 0;
+  box-shadow: inset -3px 0 6px rgba(0, 0, 0, 0.25), 0 2px 3px rgba(0, 0, 0, 0.3);
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  padding-bottom: 6px;
+  text-decoration: none;
+  transition: transform 0.12s ease;
+  flex-shrink: 0;
+}
+
+.bookshelf__spine:hover {
+  transform: translateY(-4px);
+}
+
+.bookshelf__spine span {
+  writing-mode: vertical-rl;
+  transform: rotate(180deg);
+  font-size: 0.65rem;
+  color: rgba(255, 255, 255, 0.9);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-height: 100%;
+}
+
+.bookshelf__spine--empty {
+  height: 6px;
+  align-self: flex-end;
+  background: rgba(255, 255, 255, 0.06);
+  box-shadow: none;
+}
+
+.bookshelf__ledge {
+  height: 14px;
+  margin-top: 4px;
+  border-radius: 3px;
+  background: linear-gradient(180deg, #2a1f16, #17110b);
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.35);
+}

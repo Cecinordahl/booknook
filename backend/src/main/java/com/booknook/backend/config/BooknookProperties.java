@@ -8,6 +8,7 @@ public class BooknookProperties {
     private Cors cors = new Cors();
     private Firebase firebase = new Firebase();
     private Hardcover hardcover = new Hardcover();
+    private GoogleBooks googleBooks = new GoogleBooks();
     private Push push = new Push();
     private SeriesCache seriesCache = new SeriesCache();
 
@@ -33,6 +34,14 @@ public class BooknookProperties {
 
     public void setHardcover(Hardcover hardcover) {
         this.hardcover = hardcover;
+    }
+
+    public GoogleBooks getGoogleBooks() {
+        return googleBooks;
+    }
+
+    public void setGoogleBooks(GoogleBooks googleBooks) {
+        this.googleBooks = googleBooks;
     }
 
     public Push getPush() {
@@ -102,6 +111,20 @@ public class BooknookProperties {
 
         public void setGraphqlUrl(String graphqlUrl) {
             this.graphqlUrl = graphqlUrl;
+        }
+    }
+
+    public static class GoogleBooks {
+        // Optional: unauthenticated requests share a small, easily-exhausted anonymous quota.
+        // Without a key, ISBN lookup and title search still work but may 429 under light use.
+        private String apiKey;
+
+        public String getApiKey() {
+            return apiKey;
+        }
+
+        public void setApiKey(String apiKey) {
+            this.apiKey = apiKey;
         }
     }
 

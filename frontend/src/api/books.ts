@@ -17,6 +17,7 @@ function toQueryString(filter: BookFilter): string {
 
 export const booksApi = {
   list: (filter: BookFilter = {}) => api.get<Book[]>(`/api/books${toQueryString(filter)}`),
+  genres: () => api.get<string[]>("/api/books/genres"),
   get: (id: string) => api.get<Book>(`/api/books/${id}`),
   create: (book: Partial<Book>) => api.post<Book>("/api/books", book),
   update: (id: string, book: Partial<Book>) => api.put<Book>(`/api/books/${id}`, book),

@@ -66,7 +66,21 @@ Sign up at https://hardcover.app, then find your API key in your account setting
 (https://hardcover.app/account/api). This powers series search and release-date lookups; without
 it, the app still runs — series search just returns no results until you set it.
 
-## 5. Generate VAPID keys for web push
+## 5. Get a Google Books API key (optional but recommended)
+
+ISBN lookup and title search-as-you-type both use the Google Books API, which works without a
+key — but the anonymous/no-key quota is small and shared across everyone using it unauthenticated,
+so it 429s (rate-limits) easily even under light use. To fix that:
+
+1. Go to https://console.cloud.google.com/apis/library/books.googleapis.com and select your
+   Firebase project, then click **Enable**.
+2. Go to https://console.cloud.google.com/apis/credentials (same project) > **Create Credentials
+   > API key**.
+3. Click the new key > under "API restrictions" choose **Restrict key** > select **Books API**
+   only > Save.
+4. This is `GOOGLE_BOOKS_API_KEY` in the backend's `.env`.
+
+## 6. Generate VAPID keys for web push
 
 VAPID keys authenticate your server to push services. Generate a pair with:
 
@@ -79,13 +93,13 @@ This prints a public and private key. The public key goes to the frontend
 (`VAPID_PUBLIC_KEY` / `VAPID_PRIVATE_KEY`). Without these, the app still runs — push
 notifications just stay disabled until configured.
 
-## 6. Local development
+## 7. Local development
 
 ### Backend
 
 ```bash
 cd backend
-cp .env.example .env   # then fill in the values from steps 2, 4, 5 above
+cp .env.example .env   # then fill in the values from steps 2, 4, 5, 6 above
 ```
 
 Load the `.env` values into your shell and run:
@@ -96,8 +110,9 @@ export $(grep -v '^#' .env | xargs)
 ```
 
 The API starts on http://localhost:8080. `FIREBASE_PROJECT_ID` and `FIREBASE_CREDENTIALS_PATH`
-are required for the app to start at all; `HARDCOVER_API_KEY` and the `VAPID_*` keys are optional
-at startup — only the features that need them are disabled without them (a warning is logged).
+are required for the app to start at all; `HARDCOVER_API_KEY`, `GOOGLE_BOOKS_API_KEY`, and the
+`VAPID_*` keys are optional at startup — only the features that need them are degraded without
+them (a warning is logged).
 
 ### Frontend
 
@@ -111,7 +126,7 @@ npm run dev
 The app runs on http://localhost:5173. Sign in with an email you added to the allowlist in
 step 3.
 
-## 7. Deploy the backend (Render, free tier)
+## 8. Deploy the backend (Render, free tier)
 
 1. Push this repo to GitHub (Render deploys from a Git remote).
 2. In the [Render dashboard](https://dashboard.render.com), click **New > Web Service** and
@@ -125,15 +140,15 @@ step 3.
    `FIREBASE_CREDENTIALS_PATH`, use Render's **Secret Files** feature (Environment > Secret
    Files) to upload the service-account JSON, and point the env var at the path Render gives it
    (typically `/etc/secrets/<filename>`).
-6. Set `ALLOWED_ORIGIN` to your deployed frontend's URL once you have it (step 8) so CORS allows
-   it — you'll need to redeploy after step 8 to update this.
+6. Set `ALLOWED_ORIGIN` to your deployed frontend's URL once you have it (step 9) so CORS allows
+   it — you'll need to redeploy after step 9 to update this.
 7. Deploy. Render gives you a URL like `https://booknook-backend.onrender.com` — this is your
    `VITE_API_BASE_URL` for the frontend.
 
 Free-tier Render services spin down after inactivity and take ~30–60s to wake up on the next
 request — fine for a small friends app, just expect the first load after idle time to be slow.
 
-## 8. Deploy the frontend (Vercel or Cloudflare Pages, free tier)
+## 9. Deploy the frontend (Vercel or Cloudflare Pages, free tier)
 
 **Vercel:**
 
@@ -142,9 +157,9 @@ request — fine for a small friends app, just expect the first load after idle 
 3. Framework preset: Vite (should auto-detect). Build command `npm run build`, output directory
    `dist`.
 4. Add the environment variables from `frontend/.env.example` (Project Settings >
-   Environment Variables), using your deployed backend URL from step 7 for
+   Environment Variables), using your deployed backend URL from step 8 for
    `VITE_API_BASE_URL`.
-5. Deploy. Vercel gives you a URL — go back to step 7 and set the backend's `ALLOWED_ORIGIN` to
+5. Deploy. Vercel gives you a URL — go back to step 8 and set the backend's `ALLOWED_ORIGIN` to
    this URL, then redeploy the backend.
 
 **Cloudflare Pages** works the same way: connect the repo, set the root directory to `frontend`,

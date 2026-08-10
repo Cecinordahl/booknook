@@ -21,6 +21,8 @@ booknook:
   hardcover:
     api-key: ${HARDCOVER_API_KEY:}
     graphql-url: ${HARDCOVER_GRAPHQL_URL:https://api.hardcover.app/v1/graphql}
+  google-books:
+    api-key: ${GOOGLE_BOOKS_API_KEY:}
   push:
     vapid-public-key: ${VAPID_PUBLIC_KEY:}
     vapid-private-key: ${VAPID_PRIVATE_KEY:}

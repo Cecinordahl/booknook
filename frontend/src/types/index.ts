@@ -30,6 +30,7 @@ export interface BookMetadataSuggestion {
   coverImageUrl?: string;
   pageCount?: number;
   publicationYear?: number;
+  genre?: string;
   source?: string;
 }
 

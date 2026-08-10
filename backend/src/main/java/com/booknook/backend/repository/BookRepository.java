@@ -117,6 +117,17 @@ public class BookRepository {
         return snapshot.getDocuments().stream().map(doc -> doc.toObject(Book.class)).collect(Collectors.toList());
     }
 
+    /** Distinct, sorted genre strings the owner has already used — powers the Add Book genre autocomplete. */
+    public List<String> findDistinctGenresByOwner(String ownerUid) throws ExecutionException, InterruptedException {
+        QuerySnapshot snapshot = collection().whereEqualTo("ownerUid", ownerUid).get().get();
+        return snapshot.getDocuments().stream()
+                .map(doc -> doc.getString("genre"))
+                .filter(genre -> genre != null && !genre.isBlank())
+                .distinct()
+                .sorted(String.CASE_INSENSITIVE_ORDER)
+                .collect(Collectors.toList());
+    }
+
     public void deleteAllForUser(String ownerUid) throws ExecutionException, InterruptedException {
         QuerySnapshot snapshot = collection().whereEqualTo("ownerUid", ownerUid).get().get();
         for (var doc : snapshot.getDocuments()) {

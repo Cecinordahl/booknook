@@ -1,9 +1,10 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { booksApi } from "../api/books";
 import { lookupApi } from "../api/lookup";
 import { BarcodeScanner } from "../components/BarcodeScanner";
 import { OcrCapture } from "../components/OcrCapture";
+import { TitleSearch } from "../components/TitleSearch";
 import type { Book, BookFormat } from "../types";
 
 type Tab = "manual" | "scan" | "screenshot";
@@ -21,6 +22,11 @@ export function AddBookPage() {
   const [draft, setDraft] = useState<Partial<Book>>(EMPTY_DRAFT);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [existingGenres, setExistingGenres] = useState<string[]>([]);
+
+  useEffect(() => {
+    booksApi.genres().then(setExistingGenres).catch(() => setExistingGenres([]));
+  }, []);
 
   async function lookupIsbn(isbn: string) {
     setError(null);
@@ -34,6 +40,7 @@ export function AddBookPage() {
         coverImageUrl: suggestion.coverImageUrl,
         pageCount: suggestion.pageCount,
         publicationYear: suggestion.publicationYear,
+        genre: suggestion.genre ?? d.genre,
       }));
       setTab("manual");
     } catch {
@@ -93,7 +100,22 @@ export function AddBookPage() {
         <div className="card" style={{ display: "flex", flexDirection: "column", gap: 12 }}>
           <label>
             <div>Title</div>
-            <input value={draft.title ?? ""} onChange={(e) => setDraft({ ...draft, title: e.target.value })} />
+            <TitleSearch
+              value={draft.title ?? ""}
+              onChange={(title) => setDraft((d) => ({ ...d, title }))}
+              onSelect={(suggestion) =>
+                setDraft((d) => ({
+                  ...d,
+                  title: suggestion.title ?? d.title,
+                  authors: suggestion.authors ?? d.authors,
+                  isbn: suggestion.isbn ?? d.isbn,
+                  coverImageUrl: suggestion.coverImageUrl,
+                  pageCount: suggestion.pageCount,
+                  publicationYear: suggestion.publicationYear,
+                  genre: suggestion.genre ?? d.genre,
+                }))
+              }
+            />
           </label>
           <label>
             <div>Author(s), comma-separated</div>
@@ -126,7 +148,19 @@ export function AddBookPage() {
           </label>
           <label>
             <div>Genre</div>
-            <input value={draft.genre ?? ""} onChange={(e) => setDraft({ ...draft, genre: e.target.value })} />
+            <input
+              value={draft.genre ?? ""}
+              onChange={(e) => setDraft({ ...draft, genre: e.target.value })}
+              list="genre-options"
+              placeholder="Start typing or pick a genre you've used before…"
+            />
+            {/* Browser-native autocomplete against genres already used in this library — no
+                custom dropdown needed, and it stays in sync as existingGenres grows over time. */}
+            <datalist id="genre-options">
+              {existingGenres.map((genre) => (
+                <option key={genre} value={genre} />
+              ))}
+            </datalist>
           </label>
 
           <button className="btn" onClick={save} disabled={saving}>

@@ -26,6 +26,13 @@ public class BookController {
         return bookService.list(principal.uid(), filter);
     }
 
+    /** Distinct genres the caller has already used, for the Add Book genre autocomplete. */
+    @GetMapping("/genres")
+    public List<String> genres(@AuthenticationPrincipal FirebaseAuthenticatedUser principal)
+            throws ExecutionException, InterruptedException {
+        return bookService.listGenres(principal.uid());
+    }
+
     @GetMapping("/{id}")
     public Book get(@AuthenticationPrincipal FirebaseAuthenticatedUser principal, @PathVariable String id)
             throws ExecutionException, InterruptedException {

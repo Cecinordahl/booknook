@@ -15,19 +15,21 @@ public class BookMetadataSuggestion {
     private String coverImageUrl;
     private Integer pageCount;
     private Integer publicationYear;
+    private String genre;
     private String source;
 
     public BookMetadataSuggestion() {
     }
 
     public BookMetadataSuggestion(String title, List<String> authors, String isbn, String coverImageUrl,
-                                   Integer pageCount, Integer publicationYear, String source) {
+                                   Integer pageCount, Integer publicationYear, String genre, String source) {
         this.title = title;
         this.authors = authors;
         this.isbn = isbn;
         this.coverImageUrl = coverImageUrl;
         this.pageCount = pageCount;
         this.publicationYear = publicationYear;
+        this.genre = genre;
         this.source = source;
     }
 
@@ -77,6 +79,14 @@ public class BookMetadataSuggestion {
 
     public void setPublicationYear(Integer publicationYear) {
         this.publicationYear = publicationYear;
+    }
+
+    public String getGenre() {
+        return genre;
+    }
+
+    public void setGenre(String genre) {
+        this.genre = genre;
     }
 
     public String getSource() {

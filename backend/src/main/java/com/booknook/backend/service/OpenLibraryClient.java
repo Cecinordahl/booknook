@@ -67,6 +67,7 @@ public class OpenLibraryClient {
         }
 
         String coverUrl = data.path("cover").path("medium").asText(null);
+        String genre = data.path("subjects").isEmpty() ? null : data.get("subjects").get(0).path("name").asText(null);
 
         return new BookMetadataSuggestion(
                 data.path("title").asText(null),
@@ -75,6 +76,7 @@ public class OpenLibraryClient {
                 coverUrl,
                 data.hasNonNull("number_of_pages") ? data.get("number_of_pages").asInt() : null,
                 publicationYear,
+                genre,
                 "open-library"
         );
     }

@@ -1,5 +1,6 @@
 package com.booknook.backend.controller;
 
+import com.booknook.backend.exception.ExternalApiException;
 import com.booknook.backend.exception.ForbiddenException;
 import com.booknook.backend.exception.ResourceNotFoundException;
 import org.slf4j.Logger;
@@ -25,6 +26,13 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(ForbiddenException.class)
     public ResponseEntity<Map<String, String>> forbidden(ForbiddenException e) {
         return ResponseEntity.status(HttpStatus.FORBIDDEN).body(Map.of("error", "forbidden", "message", e.getMessage()));
+    }
+
+    @ExceptionHandler(ExternalApiException.class)
+    public ResponseEntity<Map<String, String>> externalApiFailure(ExternalApiException e) {
+        log.warn("External API call failed: {}", e.getMessage());
+        return ResponseEntity.status(HttpStatus.SERVICE_UNAVAILABLE)
+                .body(Map.of("error", "external_api_unavailable", "message", "That lookup service is temporarily unavailable."));
     }
 
     @ExceptionHandler(ExecutionException.class)

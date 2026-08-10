@@ -8,6 +8,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
 import java.time.Instant;
+import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.ExecutionException;
 
@@ -61,5 +62,14 @@ public class BookLookupService {
         });
 
         return result;
+    }
+
+    /**
+     * Search-as-you-type for the Add Book form's title field. Unlike ISBN lookup, this isn't
+     * cached (free-text queries have low cache-hit value) and doesn't fall back to Open Library
+     * (Google Books' free-text search covers this well enough for a first pass).
+     */
+    public List<BookMetadataSuggestion> searchByTitle(String query) {
+        return googleBooksClient.searchByTitle(query);
     }
 }

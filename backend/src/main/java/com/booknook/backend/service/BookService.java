@@ -24,6 +24,10 @@ public class BookService {
         return bookRepository.findByOwner(ownerUid, filter);
     }
 
+    public List<String> listGenres(String ownerUid) throws ExecutionException, InterruptedException {
+        return bookRepository.findDistinctGenresByOwner(ownerUid);
+    }
+
     public Book get(String ownerUid, String bookId) throws ExecutionException, InterruptedException {
         Book book = bookRepository.findById(bookId)
                 .orElseThrow(() -> new ResourceNotFoundException("Book not found: " + bookId));

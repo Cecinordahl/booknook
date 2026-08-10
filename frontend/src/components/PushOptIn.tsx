@@ -1,6 +1,15 @@
 import { useEffect, useState } from "react";
 import { pushApi } from "../api/push";
 
+function isIosNotStandalone(): boolean {
+  const isIos = /iPhone|iPad|iPod/.test(navigator.userAgent);
+  const isStandalone =
+    window.matchMedia("(display-mode: standalone)").matches ||
+    // Safari's non-standard property for "launched from the Home Screen icon".
+    (navigator as Navigator & { standalone?: boolean }).standalone === true;
+  return isIos && !isStandalone;
+}
+
 function urlBase64ToUint8Array(base64: string): Uint8Array<ArrayBuffer> {
   const padding = "=".repeat((4 - (base64.length % 4)) % 4);
   const base64Safe = (base64 + padding).replace(/-/g, "+").replace(/_/g, "/");
@@ -66,6 +75,12 @@ export function PushOptIn() {
 
   return (
     <div>
+      {isIosNotStandalone() && (
+        <p style={{ color: "var(--color-text-muted)", fontSize: "0.85rem", marginTop: 0 }}>
+          On iPhone, notifications only work if Booknook is added to your Home Screen (Share →
+          Add to Home Screen). Otherwise you'll only see them while this tab is open.
+        </p>
+      )}
       {status === "subscribed" ? (
         <button className="btn secondary" onClick={unsubscribe}>
           Disable release notifications

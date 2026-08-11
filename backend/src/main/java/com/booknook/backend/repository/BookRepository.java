@@ -6,9 +6,11 @@ import com.google.cloud.firestore.CollectionReference;
 import com.google.cloud.firestore.DocumentSnapshot;
 import com.google.cloud.firestore.Firestore;
 import com.google.cloud.firestore.QuerySnapshot;
+import com.google.cloud.firestore.WriteBatch;
 import org.springframework.stereotype.Repository;
 
 import java.time.Instant;
+import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
@@ -37,6 +39,29 @@ public class BookRepository {
         }
         collection.document(book.getId()).set(book).get();
         return book;
+    }
+
+    /**
+     * Writes many books in Firestore batches (500 ops max per batch — the Firestore limit) instead
+     * of one round-trip per document. Used by the Goodreads import, where a library can run into
+     * the hundreds of books and per-document writes would make the request unreasonably slow.
+     */
+    public List<Book> saveAll(List<Book> books) throws ExecutionException, InterruptedException {
+        CollectionReference collection = collection();
+        List<Book> saved = new ArrayList<>();
+        for (int start = 0; start < books.size(); start += 500) {
+            List<Book> chunk = books.subList(start, Math.min(start + 500, books.size()));
+            WriteBatch batch = firestore.batch();
+            for (Book book : chunk) {
+                if (book.getId() == null || book.getId().isBlank()) {
+                    book.setId(collection.document().getId());
+                }
+                batch.set(collection.document(book.getId()), book);
+            }
+            batch.commit().get();
+            saved.addAll(chunk);
+        }
+        return saved;
     }
 
     public Optional<Book> findById(String id) throws ExecutionException, InterruptedException {
@@ -73,6 +98,7 @@ public class BookRepository {
     private List<Book> applyFilters(List<Book> books, BookFilter filter) {
         return books.stream()
                 .filter(b -> filter.getGenre() == null || filter.getGenre().equalsIgnoreCase(b.getGenre()))
+                .filter(b -> filter.getSource() == null || filter.getSource().equalsIgnoreCase(b.getSource()))
                 .filter(b -> filter.getStatus() == null || filter.getStatus() == b.getStatus())
                 .filter(b -> filter.getFormat() == null || filter.getFormat() == b.getFormat())
                 .filter(b -> filter.getMoodTags() == null || filter.getMoodTags().isEmpty()
@@ -115,6 +141,17 @@ public class BookRepository {
         return snapshot.getDocuments().stream()
                 .map(doc -> doc.getString("genre"))
                 .filter(genre -> genre != null && !genre.isBlank())
+                .distinct()
+                .sorted(String.CASE_INSENSITIVE_ORDER)
+                .collect(Collectors.toList());
+    }
+
+    /** Distinct, sorted source strings the owner has already used — powers the Add Book source autocomplete. */
+    public List<String> findDistinctSourcesByOwner(String ownerUid) throws ExecutionException, InterruptedException {
+        QuerySnapshot snapshot = collection().whereEqualTo("ownerUid", ownerUid).get().get();
+        return snapshot.getDocuments().stream()
+                .map(doc -> doc.getString("source"))
+                .filter(source -> source != null && !source.isBlank())
                 .distinct()
                 .sorted(String.CASE_INSENSITIVE_ORDER)
                 .collect(Collectors.toList());

@@ -63,3 +63,11 @@ Only emails with a document in this collection can sign in.
 
 Render's free tier spins down after inactivity — expect the first request after idle time to be
 slow (~30–60s).
+
+## Later
+
+- **Kindle import.** Amazon has no library export, so there's no Goodreads-style bulk import for
+  Kindle books. If it's worth doing later: either a "download a CSV template" button (blank file
+  with the exact column headers the Goodreads importer expects, so a hand-built list doesn't need
+  to guess the schema), or a looser "generic CSV" mode that accepts a simpler header set
+  (`Title, Author, ISBN, Format, Status`) instead of requiring Goodreads' exact columns.

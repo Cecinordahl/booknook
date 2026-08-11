@@ -4,6 +4,12 @@ server:
 spring:
   application:
     name: booknook-backend
+  servlet:
+    multipart:
+      # A Goodreads export for a large library (with review text included) can exceed the 1MB
+      # Spring default — this covers a library in the low thousands of books.
+      max-file-size: 5MB
+      max-request-size: 5MB
   autoconfigure:
     exclude:
       # Auth is entirely Firebase-token-based (see security package) — no in-memory

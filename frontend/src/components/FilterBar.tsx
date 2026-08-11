@@ -21,6 +21,11 @@ export function FilterBar({ filter, onChange }: FilterBarProps) {
       </label>
 
       <label>
+        <div>Source</div>
+        <input value={filter.source ?? ""} onChange={(e) => set("source", e.target.value)} placeholder="Any source" />
+      </label>
+
+      <label>
         <div>Mood / theme tags</div>
         <input
           value={filter.moodTags?.join(", ") ?? ""}

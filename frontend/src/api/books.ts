@@ -1,5 +1,5 @@
 import { api } from "./client";
-import type { Book, BookFilter } from "../types";
+import type { Book, BookFilter, GoodreadsImportResult } from "../types";
 
 function toQueryString(filter: BookFilter): string {
   const params = new URLSearchParams();
@@ -18,8 +18,14 @@ function toQueryString(filter: BookFilter): string {
 export const booksApi = {
   list: (filter: BookFilter = {}) => api.get<Book[]>(`/api/books${toQueryString(filter)}`),
   genres: () => api.get<string[]>("/api/books/genres"),
+  sources: () => api.get<string[]>("/api/books/sources"),
   get: (id: string) => api.get<Book>(`/api/books/${id}`),
   create: (book: Partial<Book>) => api.post<Book>("/api/books", book),
   update: (id: string, book: Partial<Book>) => api.put<Book>(`/api/books/${id}`, book),
   remove: (id: string) => api.delete<void>(`/api/books/${id}`),
+  importGoodreads: (file: File) => {
+    const formData = new FormData();
+    formData.append("file", file);
+    return api.upload<GoodreadsImportResult>("/api/books/import/goodreads", formData);
+  },
 };

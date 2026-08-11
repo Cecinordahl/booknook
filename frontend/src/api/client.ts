@@ -15,11 +15,14 @@ export class ApiError extends Error {
 async function request<T>(path: string, init?: RequestInit): Promise<T> {
   const user = auth.currentUser;
   const idToken = user ? await user.getIdToken() : null;
+  // FormData bodies (file uploads) need the browser to set its own multipart boundary — setting
+  // Content-Type ourselves would strip that and break the request.
+  const isFormData = init?.body instanceof FormData;
 
   const response = await fetch(`${API_BASE_URL}${path}`, {
     ...init,
     headers: {
-      "Content-Type": "application/json",
+      ...(isFormData ? {} : { "Content-Type": "application/json" }),
       ...(idToken ? { Authorization: `Bearer ${idToken}` } : {}),
       ...init?.headers,
     },
@@ -53,4 +56,5 @@ export const api = {
     request<T>(path, { method: "PUT", body: body !== undefined ? JSON.stringify(body) : undefined }),
   delete: <T>(path: string, body?: unknown) =>
     request<T>(path, { method: "DELETE", body: body !== undefined ? JSON.stringify(body) : undefined }),
+  upload: <T>(path: string, formData: FormData) => request<T>(path, { method: "POST", body: formData }),
 };

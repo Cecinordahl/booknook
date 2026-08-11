@@ -3,11 +3,12 @@ import { useNavigate } from "react-router-dom";
 import { booksApi } from "../api/books";
 import { lookupApi } from "../api/lookup";
 import { BarcodeScanner } from "../components/BarcodeScanner";
+import { GoodreadsImport } from "../components/GoodreadsImport";
 import { OcrCapture } from "../components/OcrCapture";
 import { TitleSearch } from "../components/TitleSearch";
 import type { Book, BookFormat } from "../types";
 
-type Tab = "manual" | "scan" | "screenshot";
+type Tab = "manual" | "scan" | "screenshot" | "import";
 
 const EMPTY_DRAFT: Partial<Book> = {
   title: "",
@@ -23,9 +24,11 @@ export function AddBookPage() {
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [existingGenres, setExistingGenres] = useState<string[]>([]);
+  const [existingSources, setExistingSources] = useState<string[]>([]);
 
   useEffect(() => {
     booksApi.genres().then(setExistingGenres).catch(() => setExistingGenres([]));
+    booksApi.sources().then(setExistingSources).catch(() => setExistingSources([]));
   }, []);
 
   async function lookupIsbn(isbn: string) {
@@ -71,7 +74,7 @@ export function AddBookPage() {
     <div className="page" style={{ maxWidth: 560 }}>
       <h1>Add a book</h1>
 
-      <div style={{ display: "flex", gap: 10, marginBottom: 20 }}>
+      <div style={{ display: "flex", flexWrap: "wrap", gap: 10, marginBottom: 20 }}>
         <button className={`btn ${tab === "manual" ? "" : "secondary"}`} onClick={() => setTab("manual")}>
           Manual
         </button>
@@ -81,9 +84,21 @@ export function AddBookPage() {
         <button className={`btn ${tab === "screenshot" ? "" : "secondary"}`} onClick={() => setTab("screenshot")}>
           Screenshot (OCR)
         </button>
+        <button className={`btn ${tab === "import" ? "" : "secondary"}`} onClick={() => setTab("import")}>
+          Import from Goodreads
+        </button>
       </div>
 
       {error && <p className="error-text">{error}</p>}
+
+      {tab === "import" && (
+        <GoodreadsImport
+          onImported={() => {
+            booksApi.genres().then(setExistingGenres).catch(() => {});
+            booksApi.sources().then(setExistingSources).catch(() => {});
+          }}
+        />
+      )}
 
       {tab === "scan" && <BarcodeScanner onScan={lookupIsbn} />}
 
@@ -145,6 +160,21 @@ export function AddBookPage() {
               <option value="EBOOK">Ebook</option>
               <option value="AUDIOBOOK">Audiobook</option>
             </select>
+          </label>
+          <label>
+            <div>Source (optional)</div>
+            <input
+              value={draft.source ?? ""}
+              onChange={(e) => setDraft({ ...draft, source: e.target.value })}
+              list="source-options"
+              placeholder="Kindle, Audible, Library, ..."
+            />
+            {/* Same browser-native autocomplete pattern as Genre below. */}
+            <datalist id="source-options">
+              {existingSources.map((source) => (
+                <option key={source} value={source} />
+              ))}
+            </datalist>
           </label>
           <label>
             <div>Genre</div>

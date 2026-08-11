@@ -16,6 +16,7 @@ import java.util.List;
 public class BookFilter {
 
     private String genre;
+    private String source;
     private List<String> moodTags;
     private BookStatus status;
     private BookFormat format;
@@ -33,6 +34,14 @@ public class BookFilter {
 
     public void setGenre(String genre) {
         this.genre = genre;
+    }
+
+    public String getSource() {
+        return source;
+    }
+
+    public void setSource(String source) {
+        this.source = source;
     }
 
     public List<String> getMoodTags() {

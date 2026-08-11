@@ -21,6 +21,9 @@ public class Book {
     private BookFormat format;
     private BookStatus status;
 
+    /** Optional, free text — where the copy actually lives (e.g. "Kindle", "Audible", "Library"), more specific than {@link #format}. */
+    private String source;
+
     private String genre;
     private List<String> moodTags;
     private Integer publicationYear;
@@ -116,6 +119,14 @@ public class Book {
 
     public void setStatus(BookStatus status) {
         this.status = status;
+    }
+
+    public String getSource() {
+        return source;
+    }
+
+    public void setSource(String source) {
+        this.source = source;
     }
 
     public String getGenre() {

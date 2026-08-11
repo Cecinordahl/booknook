@@ -12,6 +12,7 @@ export interface Book {
   currentPage?: number;
   format: BookFormat;
   status: BookStatus;
+  source?: string;
   genre?: string;
   moodTags?: string[];
   publicationYear?: number;
@@ -36,6 +37,7 @@ export interface BookMetadataSuggestion {
 
 export interface BookFilter {
   genre?: string;
+  source?: string;
   moodTags?: string[];
   status?: BookStatus;
   format?: BookFormat;
@@ -62,6 +64,13 @@ export interface HardcoverSeriesBook {
   coverImageUrl?: string;
   releaseDate?: string;
   position?: number;
+}
+
+export interface GoodreadsImportResult {
+  imported: number;
+  skipped: number;
+  skippedTitles: string[];
+  errors: string[];
 }
 
 export interface UserAccount {

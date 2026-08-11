@@ -41,9 +41,10 @@ export function BookCard({ book, onDelete }: BookCardProps) {
       <div style={{ display: "flex", flexDirection: "column", gap: 6, minWidth: 0, flex: 1 }}>
         <strong style={{ overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{book.title}</strong>
         <span style={{ color: "var(--color-text-muted)", fontSize: "0.9rem" }}>{book.authors?.join(", ")}</span>
-        <div style={{ display: "flex", gap: 6 }}>
+        <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>
           <span className="badge">{STATUS_LABELS[book.status]}</span>
           <span className="badge badge--ink">{FORMAT_LABELS[book.format]}</span>
+          {book.source && <span className="badge badge--ink">{book.source}</span>}
         </div>
         {book.status === "READING" && <ProgressBar current={book.currentPage} total={book.pageCount} />}
       </div>

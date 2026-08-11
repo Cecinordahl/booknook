@@ -39,6 +39,10 @@ public class BookService {
         return bookRepository.findDistinctGenresByOwner(ownerUid);
     }
 
+    public List<String> listSources(String ownerUid) throws ExecutionException, InterruptedException {
+        return bookRepository.findDistinctSourcesByOwner(ownerUid);
+    }
+
     public Book get(String ownerUid, String bookId) throws ExecutionException, InterruptedException {
         Book book = bookRepository.findById(bookId)
                 .orElseThrow(() -> new ResourceNotFoundException("Book not found: " + bookId));
@@ -92,6 +96,7 @@ public class BookService {
         existing.setCurrentPage(updates.getCurrentPage());
         existing.setFormat(updates.getFormat());
         existing.setStatus(updates.getStatus());
+        existing.setSource(updates.getSource());
         existing.setGenre(updates.getGenre());
         existing.setMoodTags(updates.getMoodTags());
         existing.setPublicationYear(updates.getPublicationYear());
@@ -102,6 +107,23 @@ public class BookService {
         existing.setUpdatedAt(Instant.now());
 
         return bookRepository.save(existing);
+    }
+
+    /**
+     * Used by bulk imports (Goodreads). Deliberately skips {@link #attachSeriesIfKnown} — that
+     * does a live Hardcover lookup per book, which is fine for one book added by hand but would
+     * make an import of hundreds of books slow and hammer Hardcover's API. Series can still be
+     * followed manually afterward from each book's detail page.
+     */
+    public List<Book> bulkCreate(String ownerUid, List<Book> books) throws ExecutionException, InterruptedException {
+        Instant now = Instant.now();
+        for (Book book : books) {
+            book.setId(null);
+            book.setOwnerUid(ownerUid);
+            book.setAddedAt(now);
+            book.setUpdatedAt(now);
+        }
+        return bookRepository.saveAll(books);
     }
 
     public void delete(String ownerUid, String bookId) throws ExecutionException, InterruptedException {

@@ -3,6 +3,7 @@ package com.booknook.backend.model;
 import com.google.cloud.firestore.annotation.DocumentId;
 
 import java.time.Instant;
+import java.util.List;
 
 /** Document ID is the Firebase Auth UID. */
 public class UserAccount {
@@ -13,6 +14,8 @@ public class UserAccount {
     private String email;
     private String displayName;
     private Instant createdAt;
+    /** Null until the user saves their own choice — {@link com.booknook.backend.service.UserAccountService} fills in a default at read time. */
+    private List<Integer> notificationIntervalDays;
 
     public UserAccount() {
     }
@@ -54,5 +57,13 @@ public class UserAccount {
 
     public void setCreatedAt(Instant createdAt) {
         this.createdAt = createdAt;
+    }
+
+    public List<Integer> getNotificationIntervalDays() {
+        return notificationIntervalDays;
+    }
+
+    public void setNotificationIntervalDays(List<Integer> notificationIntervalDays) {
+        this.notificationIntervalDays = notificationIntervalDays;
     }
 }

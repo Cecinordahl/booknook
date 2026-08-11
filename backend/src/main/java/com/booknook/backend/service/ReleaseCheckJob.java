@@ -1,11 +1,12 @@
 package com.booknook.backend.service;
 
 import com.booknook.backend.model.FollowStatus;
-import com.booknook.backend.model.NotificationStage;
 import com.booknook.backend.model.Series;
 import com.booknook.backend.model.SeriesFollow;
+import com.booknook.backend.model.UserAccount;
 import com.booknook.backend.repository.SeriesFollowRepository;
 import com.booknook.backend.repository.SeriesRepository;
+import com.booknook.backend.repository.UserAccountRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.scheduling.annotation.Scheduled;
@@ -20,8 +21,9 @@ import java.util.concurrent.ExecutionException;
 
 /**
  * Daily job: for every followed series, refresh the cached release date (if stale) and send a
- * push notification at two points — roughly two months before release, and on release day —
- * exactly once each, tracked via {@link SeriesFollow#getLastNotifiedStage()}.
+ * push notification at each of the following user's configured "days before release" intervals
+ * (see {@link UserAccount#getNotificationIntervalDays()}) — exactly once per interval, tracked
+ * via {@link SeriesFollow#getNotifiedIntervalDays()}.
  */
 @Component
 public class ReleaseCheckJob {
@@ -32,13 +34,16 @@ public class ReleaseCheckJob {
     private final SeriesRepository seriesRepository;
     private final SeriesCacheService seriesCacheService;
     private final NotificationService notificationService;
+    private final UserAccountRepository userAccountRepository;
 
     public ReleaseCheckJob(SeriesFollowRepository seriesFollowRepository, SeriesRepository seriesRepository,
-                            SeriesCacheService seriesCacheService, NotificationService notificationService) {
+                            SeriesCacheService seriesCacheService, NotificationService notificationService,
+                            UserAccountRepository userAccountRepository) {
         this.seriesFollowRepository = seriesFollowRepository;
         this.seriesRepository = seriesRepository;
         this.seriesCacheService = seriesCacheService;
         this.notificationService = notificationService;
+        this.userAccountRepository = userAccountRepository;
     }
 
     @Scheduled(cron = "0 0 8 * * *")
@@ -47,6 +52,7 @@ public class ReleaseCheckJob {
         try {
             List<SeriesFollow> follows = seriesFollowRepository.findAll();
             Map<String, Series> seriesCache = new HashMap<>();
+            Map<String, List<Integer>> intervalsByUser = new HashMap<>();
 
             for (SeriesFollow follow : follows) {
                 if (follow.getStatus() != FollowStatus.ACTIVE) {
@@ -57,7 +63,8 @@ public class ReleaseCheckJob {
                         || series.getCachedNextRelease().getReleaseDate() == null) {
                     continue;
                 }
-                processFollow(follow, series);
+                List<Integer> intervalDays = intervalsByUser.computeIfAbsent(follow.getUserUid(), this::loadIntervalDays);
+                processFollow(follow, series, intervalDays);
             }
         } catch (ExecutionException | InterruptedException e) {
             if (e instanceof InterruptedException) {
@@ -84,21 +91,44 @@ public class ReleaseCheckJob {
         }
     }
 
-    private void processFollow(SeriesFollow follow, Series series) throws ExecutionException, InterruptedException {
+    private List<Integer> loadIntervalDays(String userUid) {
+        try {
+            return userAccountRepository.findByUid(userUid)
+                    .map(UserAccount::getNotificationIntervalDays)
+                    .filter(days -> days != null && !days.isEmpty())
+                    .orElse(List.of(60, 0));
+        } catch (ExecutionException | InterruptedException e) {
+            if (e instanceof InterruptedException) {
+                Thread.currentThread().interrupt();
+            }
+            log.warn("Failed to load notification preferences for {}, using default: {}", userUid, e.getMessage());
+            return List.of(60, 0);
+        }
+    }
+
+    private void processFollow(SeriesFollow follow, Series series, List<Integer> intervalDays)
+            throws ExecutionException, InterruptedException {
         LocalDate releaseDate = LocalDate.parse(series.getCachedNextRelease().getReleaseDate());
         LocalDate today = LocalDate.now();
         String seriesName = series.getName();
+        boolean changed = false;
 
-        if (releaseDate.isEqual(today) && follow.getLastNotifiedStage() != NotificationStage.RELEASE_DAY) {
-            notificationService.notifyUser(follow.getUserUid(), "Out today: " + seriesName,
-                    seriesName + " has a new release out today.");
-            follow.setLastNotifiedStage(NotificationStage.RELEASE_DAY);
-            seriesFollowRepository.save(follow);
-        } else if (releaseDate.isEqual(today.plusMonths(2))
-                && follow.getLastNotifiedStage() == NotificationStage.NONE) {
-            notificationService.notifyUser(follow.getUserUid(), "Coming soon: " + seriesName,
-                    seriesName + " releases on " + releaseDate + " — about two months away.");
-            follow.setLastNotifiedStage(NotificationStage.TWO_MONTH_WARNING);
+        for (int days : intervalDays) {
+            if (!releaseDate.minusDays(days).isEqual(today) || follow.getNotifiedIntervalDays().contains(days)) {
+                continue;
+            }
+            if (days == 0) {
+                notificationService.notifyUser(follow.getUserUid(), "Out today: " + seriesName,
+                        seriesName + " has a new release out today.");
+            } else {
+                notificationService.notifyUser(follow.getUserUid(), "Coming soon: " + seriesName,
+                        seriesName + " releases on " + releaseDate + " — " + days + " days away.");
+            }
+            follow.getNotifiedIntervalDays().add(days);
+            changed = true;
+        }
+
+        if (changed) {
             seriesFollowRepository.save(follow);
         }
     }

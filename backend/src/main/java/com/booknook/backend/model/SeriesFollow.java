@@ -3,6 +3,8 @@ package com.booknook.backend.model;
 import com.google.cloud.firestore.annotation.DocumentId;
 
 import java.time.Instant;
+import java.util.ArrayList;
+import java.util.List;
 
 /** Document ID is {@code <userUid>_<seriesId>} so follow/unfollow is an idempotent upsert. */
 public class SeriesFollow {
@@ -13,7 +15,8 @@ public class SeriesFollow {
     private String userUid;
     private String seriesId;
     private Instant followedAt;
-    private NotificationStage lastNotifiedStage = NotificationStage.NONE;
+    /** Which of the user's configured "days before release" thresholds have already fired for this follow. */
+    private List<Integer> notifiedIntervalDays = new ArrayList<>();
     private FollowStatus status = FollowStatus.ACTIVE;
 
     public SeriesFollow() {
@@ -55,12 +58,12 @@ public class SeriesFollow {
         this.followedAt = followedAt;
     }
 
-    public NotificationStage getLastNotifiedStage() {
-        return lastNotifiedStage;
+    public List<Integer> getNotifiedIntervalDays() {
+        return notifiedIntervalDays;
     }
 
-    public void setLastNotifiedStage(NotificationStage lastNotifiedStage) {
-        this.lastNotifiedStage = lastNotifiedStage;
+    public void setNotifiedIntervalDays(List<Integer> notifiedIntervalDays) {
+        this.notifiedIntervalDays = notifiedIntervalDays;
     }
 
     public FollowStatus getStatus() {

@@ -2,7 +2,8 @@ import { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { signOut } from "../firebase";
 import { meApi } from "../api/me";
-import { PushOptIn } from "../components/PushOptIn";
+import { PushOptIn, type PushStatus } from "../components/PushOptIn";
+import { NotificationIntervalsEditor } from "../components/NotificationIntervalsEditor";
 import { useAuth } from "../auth/AuthProvider";
 
 export function SettingsPage() {
@@ -10,6 +11,7 @@ export function SettingsPage() {
   const navigate = useNavigate();
   const [deleting, setDeleting] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [pushStatus, setPushStatus] = useState<PushStatus>("unknown");
 
   async function deleteAccount() {
     const confirmed = window.confirm(
@@ -43,7 +45,28 @@ export function SettingsPage() {
 
       <div className="card" style={{ marginBottom: 16 }}>
         <h3 style={{ marginTop: 0 }}>Notifications</h3>
-        <PushOptIn />
+        <p style={{ color: "var(--color-text-muted)", fontSize: "0.9rem" }}>
+          Get notified when upcoming releases from series you follow are just around the corner.
+        </p>
+
+        <div style={{ marginTop: 16 }}>
+          <div style={{ fontWeight: 600, fontSize: "0.9rem", marginBottom: 4 }}>Push notifications</div>
+          <p style={{ color: "var(--color-text-muted)", fontSize: "0.85rem", marginTop: 0 }}>
+            Turns notifications on or off for this device. Nothing arrives until this is enabled.
+          </p>
+          <PushOptIn onStatusChange={setPushStatus} />
+        </div>
+
+        {pushStatus === "subscribed" && (
+          <div style={{ marginTop: 24 }}>
+            <div style={{ fontWeight: 600, fontSize: "0.9rem", marginBottom: 4 }}>When to remind me</div>
+            <p style={{ color: "var(--color-text-muted)", fontSize: "0.85rem", marginTop: 0 }}>
+              How far ahead of a release you want a heads-up (up to 3). Applies to every series you follow,
+              on any device where notifications are enabled.
+            </p>
+            <NotificationIntervalsEditor account={account} />
+          </div>
+        )}
       </div>
 
       <div className="card" style={{ marginBottom: 16 }}>

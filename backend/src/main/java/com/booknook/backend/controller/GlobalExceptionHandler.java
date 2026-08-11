@@ -3,6 +3,7 @@ package com.booknook.backend.controller;
 import com.booknook.backend.exception.ExternalApiException;
 import com.booknook.backend.exception.ForbiddenException;
 import com.booknook.backend.exception.ResourceNotFoundException;
+import com.booknook.backend.exception.ValidationException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
@@ -26,6 +27,11 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(ForbiddenException.class)
     public ResponseEntity<Map<String, String>> forbidden(ForbiddenException e) {
         return ResponseEntity.status(HttpStatus.FORBIDDEN).body(Map.of("error", "forbidden", "message", e.getMessage()));
+    }
+
+    @ExceptionHandler(ValidationException.class)
+    public ResponseEntity<Map<String, String>> validationFailed(ValidationException e) {
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(Map.of("error", "invalid_request", "message", e.getMessage()));
     }
 
     @ExceptionHandler(ExternalApiException.class)

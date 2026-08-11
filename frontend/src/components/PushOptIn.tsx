@@ -21,20 +21,30 @@ function urlBase64ToUint8Array(base64: string): Uint8Array<ArrayBuffer> {
   return bytes;
 }
 
+export type PushStatus = "unknown" | "subscribed" | "unsubscribed" | "unsupported";
+
 /** Lets the user opt in to release-reminder push notifications for series they follow. */
-export function PushOptIn() {
-  const [status, setStatus] = useState<"unknown" | "subscribed" | "unsubscribed" | "unsupported">("unknown");
+export function PushOptIn({ onStatusChange }: { onStatusChange?: (status: PushStatus) => void }) {
+  const [status, setStatus] = useState<PushStatus>("unknown");
   const [error, setError] = useState<string | null>(null);
+  const [showIosInstructions, setShowIosInstructions] = useState(false);
+
+  function updateStatus(next: PushStatus) {
+    setStatus(next);
+    onStatusChange?.(next);
+  }
 
   useEffect(() => {
     if (!("serviceWorker" in navigator) || !("PushManager" in window)) {
-      setStatus("unsupported");
+      updateStatus("unsupported");
       return;
     }
     navigator.serviceWorker.ready.then(async (registration) => {
       const existing = await registration.pushManager.getSubscription();
-      setStatus(existing ? "subscribed" : "unsubscribed");
+      updateStatus(existing ? "subscribed" : "unsubscribed");
     });
+    // Runs once on mount to read the existing subscription — onStatusChange intentionally
+    // excluded so a new inline function identity from the parent doesn't re-trigger this.
   }, []);
 
   async function subscribe() {
@@ -52,7 +62,7 @@ export function PushOptIn() {
         applicationServerKey: urlBase64ToUint8Array(vapidPublicKey),
       });
       await pushApi.subscribe(subscription.toJSON() as PushSubscriptionJSON);
-      setStatus("subscribed");
+      updateStatus("subscribed");
     } catch (e) {
       setError(e instanceof Error ? e.message : "Could not enable notifications.");
     }
@@ -66,7 +76,7 @@ export function PushOptIn() {
       await pushApi.unsubscribe(subscription.endpoint);
       await subscription.unsubscribe();
     }
-    setStatus("unsubscribed");
+    updateStatus("unsubscribed");
   }
 
   if (status === "unsupported") {
@@ -75,21 +85,52 @@ export function PushOptIn() {
 
   return (
     <div>
-      {isIosNotStandalone() && (
-        <p style={{ color: "var(--color-text-muted)", fontSize: "0.85rem", marginTop: 0 }}>
-          On iPhone, notifications only work if Booknook is added to your Home Screen (Share →
-          Add to Home Screen). Otherwise you'll only see them while this tab is open.
-        </p>
+      <div style={{ display: "flex", gap: 10, alignItems: "center", flexWrap: "wrap" }}>
+        {status === "subscribed" ? (
+          <button className="btn secondary" onClick={unsubscribe}>
+            Disable release notifications
+          </button>
+        ) : (
+          <button className="btn" onClick={subscribe}>
+            Enable release notifications
+          </button>
+        )}
+        {isIosNotStandalone() && (
+          <button
+            type="button"
+            aria-label="Why do I need to add this to my Home Screen?"
+            title="iPhone setup info"
+            onClick={() => setShowIosInstructions((open) => !open)}
+            style={{
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              width: 22,
+              height: 22,
+              borderRadius: "50%",
+              border: "1px solid var(--color-text-muted)",
+              background: "transparent",
+              color: "var(--color-text-muted)",
+              cursor: "pointer",
+              fontSize: "0.8rem",
+              fontStyle: "italic",
+              fontFamily: "Georgia, serif",
+              padding: 0,
+            }}
+          >
+            i
+          </button>
+        )}
+      </div>
+
+      {isIosNotStandalone() && showIosInstructions && (
+        <ol style={{ color: "var(--color-text-muted)", fontSize: "0.85rem", marginTop: 10, paddingLeft: 20 }}>
+          <li>Tap the Share button in Safari.</li>
+          <li>Scroll down and tap "Add to Home Screen".</li>
+          <li>Open Booknook from the Home Screen icon you just created, then come back here to enable notifications.</li>
+        </ol>
       )}
-      {status === "subscribed" ? (
-        <button className="btn secondary" onClick={unsubscribe}>
-          Disable release notifications
-        </button>
-      ) : (
-        <button className="btn" onClick={subscribe}>
-          Enable release notifications
-        </button>
-      )}
+
       {error && <p className="error-text">{error}</p>}
     </div>
   );

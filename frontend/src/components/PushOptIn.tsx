@@ -21,6 +21,14 @@ function urlBase64ToUint8Array(base64: string): Uint8Array<ArrayBuffer> {
   return bytes;
 }
 
+const IOS_HOME_SCREEN_STEPS = (
+  <ol style={{ color: "var(--color-text-muted)", fontSize: "0.85rem", marginTop: 10, paddingLeft: 20 }}>
+    <li>Tap the Share button in Safari.</li>
+    <li>Scroll down and tap "Add to Home Screen".</li>
+    <li>Open Booknook from the Home Screen icon you just created — notifications work from there.</li>
+  </ol>
+);
+
 export type PushStatus = "unknown" | "subscribed" | "unsubscribed" | "unsupported";
 
 /** Lets the user opt in to release-reminder push notifications for series they follow. */
@@ -28,6 +36,7 @@ export function PushOptIn({ onStatusChange }: { onStatusChange?: (status: PushSt
   const [status, setStatus] = useState<PushStatus>("unknown");
   const [error, setError] = useState<string | null>(null);
   const [showIosInstructions, setShowIosInstructions] = useState(false);
+  const [permissionDenied, setPermissionDenied] = useState(false);
 
   function updateStatus(next: PushStatus) {
     setStatus(next);
@@ -39,6 +48,9 @@ export function PushOptIn({ onStatusChange }: { onStatusChange?: (status: PushSt
       updateStatus("unsupported");
       return;
     }
+    if ("Notification" in window) {
+      setPermissionDenied(Notification.permission === "denied");
+    }
     navigator.serviceWorker.ready.then(async (registration) => {
       const existing = await registration.pushManager.getSubscription();
       updateStatus(existing ? "subscribed" : "unsubscribed");
@@ -49,9 +61,19 @@ export function PushOptIn({ onStatusChange }: { onStatusChange?: (status: PushSt
 
   async function subscribe() {
     setError(null);
+
+    // Once a user picks "Don't Allow", browsers permanently block that site from re-prompting —
+    // calling requestPermission() again would just silently return "denied" with no dialog, so
+    // check first and point at the actual fix (browser site settings) instead of a dead-end error.
+    if (Notification.permission === "denied") {
+      setPermissionDenied(true);
+      return;
+    }
+
     try {
       const permission = await Notification.requestPermission();
       if (permission !== "granted") {
+        setPermissionDenied(permission === "denied");
         setError("Notification permission was not granted.");
         return;
       }
@@ -80,11 +102,30 @@ export function PushOptIn({ onStatusChange }: { onStatusChange?: (status: PushSt
   }
 
   if (status === "unsupported") {
+    if (isIosNotStandalone()) {
+      return (
+        <div>
+          <p style={{ color: "var(--color-text-muted)", fontSize: "0.9rem", margin: 0 }}>
+            Push notifications need one extra step on iPhone — they're not available until Booknook
+            is added to your Home Screen.
+          </p>
+          {IOS_HOME_SCREEN_STEPS}
+        </div>
+      );
+    }
     return <p className="error-text">Push notifications aren't supported in this browser.</p>;
   }
 
   return (
     <div>
+      {permissionDenied && (
+        <p style={{ color: "var(--color-text-muted)", fontSize: "0.85rem", marginBottom: 10 }}>
+          Notifications are blocked for this site in your browser — Booknook can't re-ask, only your
+          browser settings can undo that. Click the lock/info icon next to the address bar, find
+          "Notifications," and change it to Allow, then try again.
+        </p>
+      )}
+
       <div style={{ display: "flex", gap: 10, alignItems: "center", flexWrap: "wrap" }}>
         {status === "subscribed" ? (
           <button className="btn secondary" onClick={unsubscribe}>
@@ -123,15 +164,9 @@ export function PushOptIn({ onStatusChange }: { onStatusChange?: (status: PushSt
         )}
       </div>
 
-      {isIosNotStandalone() && showIosInstructions && (
-        <ol style={{ color: "var(--color-text-muted)", fontSize: "0.85rem", marginTop: 10, paddingLeft: 20 }}>
-          <li>Tap the Share button in Safari.</li>
-          <li>Scroll down and tap "Add to Home Screen".</li>
-          <li>Open Booknook from the Home Screen icon you just created, then come back here to enable notifications.</li>
-        </ol>
-      )}
+      {isIosNotStandalone() && showIosInstructions && IOS_HOME_SCREEN_STEPS}
 
-      {error && <p className="error-text">{error}</p>}
+      {error && !permissionDenied && <p className="error-text">{error}</p>}
     </div>
   );
 }

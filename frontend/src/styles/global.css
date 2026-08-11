@@ -63,6 +63,7 @@ a {
 }
 
 .app-nav {
+  position: relative;
   display: flex;
   align-items: center;
   gap: 20px;
@@ -88,6 +89,61 @@ a {
   font-size: 1.1rem;
   margin-right: auto;
   opacity: 1;
+}
+
+.app-nav__hamburger {
+  display: none;
+  background: transparent;
+  border: none;
+  color: #f1e7da;
+  cursor: pointer;
+  padding: 4px;
+  align-items: center;
+}
+
+.app-nav__links {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+}
+
+.app-nav__profile-label {
+  display: none;
+}
+
+@media (max-width: 640px) {
+  .app-nav__hamburger {
+    display: flex;
+  }
+
+  .app-nav__links {
+    display: none;
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 4px;
+    background: var(--color-wood);
+    padding: 12px 20px 18px;
+    border-top: 1px solid rgba(255, 255, 255, 0.15);
+    box-shadow: var(--shadow);
+    z-index: 10;
+  }
+
+  .app-nav__links--open {
+    display: flex;
+  }
+
+  .app-nav__links a {
+    width: 100%;
+    padding: 8px 0;
+  }
+
+  .app-nav__profile-label {
+    display: inline;
+  }
 }
 
 .card {

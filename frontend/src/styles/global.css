@@ -1,35 +1,22 @@
 :root {
-  --color-bg: #f6efe6;
-  --color-surface: #fffaf3;
-  --color-text: #2c2118;
-  --color-text-muted: #6b5c4d;
-  --color-wood: #3a2e26;
-  --color-wood-light: #5c4735;
-  --color-accent: #b5622f;
-  --color-accent-light: #d6a55c;
-  --color-border: #e2d4c1;
-  --color-danger: #a5333a;
+  --color-bg: #f3ecda;
+  --color-surface: #fbf6e9;
+  --color-text: #1c1a63;
+  --color-heading: #100f3e;
+  --color-ink-mid: #3733a8;
+  --color-ink-soft: #e4e0f5;
+  --color-text-muted: #746c55;
+  --color-border: #e4d9be;
+  --color-gold: #c1932b;
+  --color-gold-soft: #f3e3bd;
+  --color-terracotta: #c3502a;
+  --color-plum: #6e3e7a;
+  --color-wood: #7a4b2a;
+  --color-danger: #c3502a;
   --color-success: #3f6e4a;
-  --radius: 10px;
-  --shadow: 0 2px 8px rgba(44, 33, 24, 0.12);
+  --radius: 18px;
+  --radius-input: 10px;
   color-scheme: light;
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --color-bg: #211a14;
-    --color-surface: #2b221a;
-    --color-text: #f1e7da;
-    --color-text-muted: #b8a893;
-    --color-wood: #1a140f;
-    --color-wood-light: #2f2418;
-    --color-accent: #e08a4e;
-    --color-accent-light: #f0c184;
-    --color-border: #40332580;
-    --color-danger: #e0777d;
-    --color-success: #7ec98c;
-    color-scheme: dark;
-  }
 }
 
 * {
@@ -40,12 +27,24 @@ body {
   margin: 0;
   background: var(--color-bg);
   color: var(--color-text);
-  font-family: "Iowan Old Style", "Georgia", "Charter", serif;
+  font-family: "Space Grotesk", -apple-system, BlinkMacSystemFont, sans-serif;
   -webkit-font-smoothing: antialiased;
 }
 
+h1, h2, h3 {
+  font-family: "Space Grotesk", -apple-system, BlinkMacSystemFont, sans-serif;
+  font-weight: 700;
+  color: var(--color-heading);
+}
+
+/* Fraunces is reserved for the "book nook" wordmark lockup only — nowhere else. */
+.font-logo {
+  font-family: "Fraunces", Georgia, serif;
+  font-weight: 700;
+}
+
 a {
-  color: var(--color-accent);
+  color: var(--color-ink-mid);
 }
 
 .page {
@@ -67,35 +66,22 @@ a {
   display: flex;
   align-items: center;
   gap: 20px;
-  padding: 14px 20px;
-  background: var(--color-wood);
-  color: #f1e7da;
-}
-
-.app-nav a {
-  color: #f1e7da;
-  text-decoration: none;
-  opacity: 0.85;
-}
-
-.app-nav a.active,
-.app-nav a:hover {
-  opacity: 1;
-  text-decoration: underline;
+  padding: 18px 20px;
+  background: var(--color-bg);
+  color: var(--color-text);
 }
 
 .app-nav .brand {
-  font-weight: 700;
-  font-size: 1.1rem;
+  font-size: 2rem;
   margin-right: auto;
-  opacity: 1;
+  color: var(--color-text);
 }
 
 .app-nav__hamburger {
   display: none;
   background: transparent;
   border: none;
-  color: #f1e7da;
+  color: var(--color-text);
   cursor: pointer;
   padding: 4px;
   align-items: center;
@@ -104,7 +90,30 @@ a {
 .app-nav__links {
   display: flex;
   align-items: center;
-  gap: 20px;
+  gap: 10px;
+}
+
+.app-nav__links a {
+  display: inline-flex;
+  align-items: center;
+  text-decoration: none;
+  font-weight: 500;
+  color: var(--color-text);
+  padding: 8px 18px;
+  border-radius: 999px;
+  border: 1.5px solid var(--color-border);
+  background: var(--color-surface);
+  transition: background 0.15s ease, color 0.15s ease, border-color 0.15s ease;
+}
+
+.app-nav__links a:hover {
+  border-color: var(--color-text);
+}
+
+.app-nav__links a.active {
+  background: var(--color-text);
+  border-color: var(--color-text);
+  color: var(--color-bg);
 }
 
 .app-nav__profile-label {
@@ -123,12 +132,12 @@ a {
     left: 0;
     right: 0;
     flex-direction: column;
-    align-items: flex-start;
-    gap: 4px;
-    background: var(--color-wood);
+    align-items: stretch;
+    gap: 8px;
+    background: var(--color-bg);
     padding: 12px 20px 18px;
-    border-top: 1px solid rgba(255, 255, 255, 0.15);
-    box-shadow: var(--shadow);
+    border-top: 1.5px solid var(--color-border);
+    border-bottom: 1.5px solid var(--color-border);
     z-index: 10;
   }
 
@@ -138,7 +147,7 @@ a {
 
   .app-nav__links a {
     width: 100%;
-    padding: 8px 0;
+    justify-content: flex-start;
   }
 
   .app-nav__profile-label {
@@ -148,42 +157,69 @@ a {
 
 .card {
   background: var(--color-surface);
-  border: 1px solid var(--color-border);
+  border: 1.5px solid var(--color-border);
   border-radius: var(--radius);
-  box-shadow: var(--shadow);
   padding: 20px;
+}
+
+/* Dark ink-blue callout variant — used for the "Next in series you follow" panel to give the
+   Library page a clear focal point, per the design brief. */
+.card--dark {
+  background: var(--color-text);
+  border: none;
+  border-radius: var(--radius);
+  padding: 20px;
+  color: var(--color-bg);
+}
+
+.card--dark h3 {
+  color: var(--color-bg);
+}
+
+.card--dark a {
+  color: var(--color-gold-soft);
 }
 
 .btn {
   display: inline-flex;
   align-items: center;
   gap: 8px;
-  padding: 8px 16px;
+  padding: 9px 18px;
   border-radius: 999px;
-  border: 1px solid var(--color-accent);
-  background: var(--color-accent);
-  color: #fff;
+  border: 1.5px solid var(--color-text);
+  background: var(--color-text);
+  color: var(--color-bg);
+  font-family: inherit;
+  font-weight: 700;
   font-size: 0.95rem;
   cursor: pointer;
 }
 
 .btn.secondary {
   background: transparent;
-  color: var(--color-accent);
+  color: var(--color-text);
+}
+
+/* Secondary buttons on a dark card need light-on-dark contrast instead. */
+.card--dark .btn.secondary {
+  border-color: var(--color-bg);
+  color: var(--color-bg);
 }
 
 .btn.danger {
   background: var(--color-danger);
   border-color: var(--color-danger);
+  color: #fff;
 }
 
-/* Passive "done" state (e.g. already-followed) — inverted from .btn's solid accent so it
-   reads as a completed state rather than an available action. */
+/* Passive "done" state (e.g. already-followed) — inverted from .btn's solid ink so it reads as
+   a completed state rather than an available action. */
 .btn.followed {
   background: transparent;
   border-color: var(--color-success);
   color: var(--color-success);
   cursor: default;
+  font-weight: 500;
 }
 
 .book-card-delete:hover {
@@ -200,11 +236,72 @@ select,
 textarea {
   font-family: inherit;
   font-size: 0.95rem;
-  padding: 8px 10px;
-  border-radius: 6px;
-  border: 1px solid var(--color-border);
-  background: var(--color-surface);
+  line-height: 1.3;
+  padding: 9px 12px;
+  border-radius: var(--radius-input);
+  border: 1.5px solid var(--color-border);
+  background: var(--color-bg);
   color: var(--color-text);
+}
+
+/* Inputs and selects render at slightly different intrinsic heights across browsers even with
+   identical padding — pin both to the same height so mixed rows of fields line up. */
+input,
+select {
+  height: 42px;
+}
+
+textarea {
+  min-height: 90px;
+}
+
+/* Every field in the app follows the same "<label><div>Caption</div><input/></label>" pattern —
+   make that pattern always produce a full-width, stacked field instead of relying on each
+   input's intrinsic (browser-default ~20-character) width. */
+label {
+  display: block;
+  font-size: 0.85rem;
+  font-weight: 500;
+  color: var(--color-text-muted);
+}
+
+label > *:not(:first-child) {
+  margin-top: 6px;
+}
+
+label > input,
+label > select,
+label > textarea {
+  display: block;
+  width: 100%;
+}
+
+.shelf-hero {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 32px;
+  margin-bottom: 36px;
+}
+
+.shelf-hero__text {
+  max-width: 480px;
+  min-width: 0;
+}
+
+.shelf-hero__image {
+  width: 560px;
+  max-width: 100%;
+  height: auto;
+  flex-shrink: 0;
+}
+
+/* Below this, the text block has too little room to shrink into — drop the illustration to its
+   own line instead of squeezing the headline. */
+@media (max-width: 720px) {
+  .shelf-hero {
+    flex-wrap: wrap;
+  }
 }
 
 .progress-bar {
@@ -216,18 +313,40 @@ textarea {
 
 .progress-bar__fill {
   height: 100%;
-  background: var(--color-accent);
+  background: var(--color-text);
 }
 
+/* Default badge = gold (status-type tags, e.g. reading status). Add badge--ink for
+   format-type tags (lavender), matching the Library mockup's two-tag-color system. */
 .badge {
   display: inline-block;
   font-size: 0.75rem;
-  padding: 2px 8px;
+  font-weight: 500;
+  padding: 3px 10px;
   border-radius: 999px;
-  background: var(--color-accent-light);
-  color: #3a2e26;
+  background: var(--color-gold-soft);
+  color: var(--color-heading);
+}
+
+.badge--ink {
+  background: var(--color-ink-soft);
+  color: var(--color-ink-mid);
 }
 
 .error-text {
   color: var(--color-danger);
+}
+
+/* Filter bar: a real grid (not wrapped flex) so fields on wrapped rows line up in columns
+   instead of drifting based on each field's content width. */
+.filter-bar {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+  gap: 16px 14px;
+}
+
+.filter-bar__actions {
+  grid-column: 1 / -1;
+  display: flex;
+  justify-content: flex-end;
 }

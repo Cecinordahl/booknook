@@ -1,18 +1,9 @@
 import { Link } from "react-router-dom";
 import type { Book } from "../types";
+import { colorForId } from "../utils/palette";
 import "./Bookshelf.css";
 
 const SHELF_CAPACITY = 9;
-const SPINE_COLORS = ["#b5622f", "#5c4735", "#3f6e4a", "#8a4b6b", "#c98a2c", "#3a5a78", "#a5333a"];
-
-function hashString(value: string): number {
-  let hash = 0;
-  for (let i = 0; i < value.length; i++) {
-    hash = (hash << 5) - hash + value.charCodeAt(i);
-    hash |= 0;
-  }
-  return Math.abs(hash);
-}
 
 function spineHeight(pageCount?: number): number {
   if (!pageCount) return 90;
@@ -43,35 +34,44 @@ export function Bookshelf({ books }: { books: Book[] }) {
 
   return (
     <div className="bookshelf">
-      {rows.map((row, rowIndex) => (
-        <div className="bookshelf__row" key={rowIndex}>
-          <div className="bookshelf__spines">
-            {row.map((book) => {
-              const color = SPINE_COLORS[hashString(book.id) % SPINE_COLORS.length];
-              const finished = book.status === "FINISHED";
-              return (
+      {rows.map((row, rowIndex) => {
+        const isLastRow = rowIndex === rows.length - 1;
+        return (
+          <div className="bookshelf__row" key={rowIndex}>
+            <div className="bookshelf__spines">
+              {row.map((book) => {
+                const finished = book.status === "FINISHED";
+                return (
+                  <Link
+                    key={book.id}
+                    to={`/books/${book.id}`}
+                    className="bookshelf__spine"
+                    style={{
+                      height: spineHeight(book.pageCount),
+                      background: colorForId(book.id),
+                      opacity: finished ? 1 : 0.85,
+                    }}
+                    title={book.title}
+                  >
+                    <span>{book.title}</span>
+                  </Link>
+                );
+              })}
+              {isLastRow && (
                 <Link
-                  key={book.id}
-                  to={`/books/${book.id}`}
-                  className="bookshelf__spine"
-                  style={{
-                    height: spineHeight(book.pageCount),
-                    background: color,
-                    opacity: finished ? 1 : 0.85,
-                  }}
-                  title={book.title}
+                  to="/add"
+                  className="bookshelf__spine bookshelf__spine--add"
+                  title="Add a book"
+                  aria-label="Add a book"
                 >
-                  <span>{book.title}</span>
+                  +
                 </Link>
-              );
-            })}
-            {Array.from({ length: Math.max(0, SHELF_CAPACITY - row.length) }).map((_, i) => (
-              <div className="bookshelf__spine bookshelf__spine--empty" key={`empty-${i}`} />
-            ))}
+              )}
+            </div>
+            <div className="bookshelf__ledge" />
           </div>
-          <div className="bookshelf__ledge" />
-        </div>
-      ))}
+        );
+      })}
     </div>
   );
 }

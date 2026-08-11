@@ -3,9 +3,8 @@
   flex-direction: column;
   gap: 28px;
   padding: 20px;
-  background: linear-gradient(180deg, var(--color-wood-light), var(--color-wood));
+  background: var(--color-text);
   border-radius: var(--radius);
-  box-shadow: var(--shadow);
 }
 
 .bookshelf__row {
@@ -23,8 +22,7 @@
 
 .bookshelf__spine {
   width: 26px;
-  border-radius: 2px 2px 0 0;
-  box-shadow: inset -3px 0 6px rgba(0, 0, 0, 0.25), 0 2px 3px rgba(0, 0, 0, 0.3);
+  border-radius: 8px 8px 0 0;
   display: flex;
   align-items: flex-end;
   justify-content: center;
@@ -49,17 +47,20 @@
   max-height: 100%;
 }
 
-.bookshelf__spine--empty {
-  height: 6px;
-  align-self: flex-end;
-  background: rgba(255, 255, 255, 0.06);
-  box-shadow: none;
+.bookshelf__spine--add {
+  height: 60px;
+  background: transparent;
+  border: 1.5px dashed var(--color-gold-soft);
+  color: var(--color-gold-soft);
+  font-size: 1.2rem;
+  font-weight: 700;
+  align-items: center;
+  padding-bottom: 0;
 }
 
 .bookshelf__ledge {
   height: 14px;
   margin-top: 4px;
-  border-radius: 3px;
-  background: linear-gradient(180deg, #2a1f16, #17110b);
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.35);
+  border-radius: 999px;
+  background: var(--color-wood);
 }

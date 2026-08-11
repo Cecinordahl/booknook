@@ -18,8 +18,8 @@ export default defineConfig({
         name: "Booknook",
         short_name: "Booknook",
         description: "A personal, invite-only book tracker for a small group of friends.",
-        theme_color: "#3a2e26",
-        background_color: "#f6efe6",
+        theme_color: "#1C1A63",
+        background_color: "#F3ECDA",
         display: "standalone",
         start_url: "/",
         icons: [

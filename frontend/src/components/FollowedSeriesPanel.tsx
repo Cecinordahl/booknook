@@ -50,7 +50,7 @@ export function FollowedSeriesPanel({ followed, onChanged }: { followed: SeriesF
   }
 
   return (
-    <div className="card">
+    <div className="card card--dark">
       <h3 style={{ marginTop: 0 }}>Next in series you follow</h3>
       {upcoming.length > 0 ? (
         <ul style={{ margin: 0, paddingLeft: 0, listStyle: "none" }}>
@@ -59,7 +59,7 @@ export function FollowedSeriesPanel({ followed, onChanged }: { followed: SeriesF
           ))}
         </ul>
       ) : (
-        <p style={{ color: "var(--color-text-muted)", margin: 0 }}>Nothing dated yet.</p>
+        <p style={{ color: "var(--color-gold-soft)", margin: 0 }}>Nothing dated yet.</p>
       )}
 
       {completed.length > 0 && (

@@ -20,7 +20,7 @@ function Nav() {
 
   return (
     <nav className="app-nav">
-      <span className="brand">Booknook</span>
+      <span className="brand font-logo">Booknook</span>
       <button
         type="button"
         className="app-nav__hamburger"

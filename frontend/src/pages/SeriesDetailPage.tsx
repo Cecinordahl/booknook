@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import { seriesApi } from "../api/series";
+import { colorForId } from "../utils/palette";
 import type { HardcoverSeriesBook, SeriesFollowView } from "../types";
 
 export function SeriesDetailPage() {
@@ -80,7 +81,7 @@ export function SeriesDetailPage() {
                   height: 72,
                   flexShrink: 0,
                   borderRadius: 4,
-                  background: b.coverImageUrl ? `center/cover url(${b.coverImageUrl})` : "var(--color-accent-light)",
+                  background: b.coverImageUrl ? `center/cover url(${b.coverImageUrl})` : colorForId(b.title + i),
                 }}
               />
               <div>

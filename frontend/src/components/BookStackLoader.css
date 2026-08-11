@@ -19,7 +19,7 @@
   bottom: 0;
   height: 6px;
   border-radius: 2px;
-  background: linear-gradient(180deg, var(--color-wood-light), var(--color-wood));
+  background: var(--color-text);
 }
 
 .book-stack-loader__book {
@@ -37,35 +37,35 @@
 .book-stack-loader__book--1 {
   bottom: 10px;
   width: 92px;
-  background: #b5622f;
+  background: #c1932b;
   animation-name: book-stack-slot-1;
 }
 
 .book-stack-loader__book--2 {
   bottom: 25px;
   width: 78px;
-  background: #3f6e4a;
+  background: #c3502a;
   animation-name: book-stack-slot-2;
 }
 
 .book-stack-loader__book--3 {
   bottom: 40px;
   width: 84px;
-  background: #8a4b6b;
+  background: #6e3e7a;
   animation-name: book-stack-slot-3;
 }
 
 .book-stack-loader__book--4 {
   bottom: 55px;
   width: 66px;
-  background: #c98a2c;
+  background: #3733a8;
   animation-name: book-stack-slot-4;
 }
 
 .book-stack-loader__book--5 {
   bottom: 70px;
   width: 72px;
-  background: #3a5a78;
+  background: #8a6a1f;
   animation-name: book-stack-slot-5;
 }
 

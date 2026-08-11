@@ -14,7 +14,7 @@ export function FilterBar({ filter, onChange }: FilterBarProps) {
   }
 
   return (
-    <div className="card" style={{ display: "flex", flexWrap: "wrap", gap: 12, alignItems: "flex-end" }}>
+    <div className="card filter-bar">
       <label>
         <div>Genre</div>
         <input value={filter.genre ?? ""} onChange={(e) => set("genre", e.target.value)} placeholder="Any genre" />
@@ -125,9 +125,11 @@ export function FilterBar({ filter, onChange }: FilterBarProps) {
         </select>
       </label>
 
-      <button className="btn secondary" type="button" onClick={() => onChange({ sortBy: "addedAt", sortDescending: true })}>
-        Reset filters
-      </button>
+      <div className="filter-bar__actions">
+        <button className="btn secondary" type="button" onClick={() => onChange({ sortBy: "addedAt", sortDescending: true })}>
+          Reset filters
+        </button>
+      </div>
     </div>
   );
 }

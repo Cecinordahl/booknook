@@ -78,9 +78,8 @@ export function TitleSearch({ value, onChange, onSelect }: TitleSearchProps) {
             padding: 4,
             listStyle: "none",
             background: "var(--color-surface)",
-            border: "1px solid var(--color-border)",
-            borderRadius: 8,
-            boxShadow: "var(--shadow)",
+            border: "1.5px solid var(--color-border)",
+            borderRadius: 12,
             maxHeight: 280,
             overflowY: "auto",
           }}
@@ -116,7 +115,7 @@ export function TitleSearch({ value, onChange, onSelect }: TitleSearchProps) {
                     borderRadius: 3,
                     background: suggestion.coverImageUrl
                       ? `center/cover url(${suggestion.coverImageUrl})`
-                      : "var(--color-accent-light)",
+                      : "var(--color-gold-soft)",
                   }}
                 />
                 <div style={{ minWidth: 0 }}>

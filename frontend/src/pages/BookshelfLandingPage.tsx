@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { booksApi } from "../api/books";
 import { Bookshelf } from "../components/Bookshelf";
+import { BookStackLoader } from "../components/BookStackLoader";
 import type { Book } from "../types";
 
 export function BookshelfLandingPage() {
@@ -26,7 +27,7 @@ export function BookshelfLandingPage() {
 
       {error && <p className="error-text">{error}</p>}
 
-      {books === null && !error && <p>Loading your shelf…</p>}
+      {books === null && !error && <BookStackLoader />}
 
       {books !== null && books.length === 0 && (
         <div className="card">

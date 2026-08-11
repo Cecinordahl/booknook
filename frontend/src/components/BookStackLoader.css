@@ -1,0 +1,130 @@
+.book-stack-loader {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+  padding: 40px 0;
+}
+
+.book-stack-loader__stack {
+  position: relative;
+  width: 140px;
+  height: 96px;
+}
+
+.book-stack-loader__shelf {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 6px;
+  border-radius: 2px;
+  background: linear-gradient(180deg, var(--color-wood-light), var(--color-wood));
+}
+
+.book-stack-loader__book {
+  position: absolute;
+  left: 50%;
+  height: 14px;
+  border-radius: 2px;
+  opacity: 0;
+  transform: translate(-50%, 10px) scale(0.85);
+  animation-duration: 4s;
+  animation-iteration-count: infinite;
+  animation-timing-function: ease-in-out;
+}
+
+.book-stack-loader__book--1 {
+  bottom: 10px;
+  width: 92px;
+  background: #b5622f;
+  animation-name: book-stack-slot-1;
+}
+
+.book-stack-loader__book--2 {
+  bottom: 25px;
+  width: 78px;
+  background: #3f6e4a;
+  animation-name: book-stack-slot-2;
+}
+
+.book-stack-loader__book--3 {
+  bottom: 40px;
+  width: 84px;
+  background: #8a4b6b;
+  animation-name: book-stack-slot-3;
+}
+
+.book-stack-loader__book--4 {
+  bottom: 55px;
+  width: 66px;
+  background: #c98a2c;
+  animation-name: book-stack-slot-4;
+}
+
+.book-stack-loader__book--5 {
+  bottom: 70px;
+  width: 72px;
+  background: #3a5a78;
+  animation-name: book-stack-slot-5;
+}
+
+/* Each book appears at its own point in a shared 4s cycle, stays put, then every book fades
+   out together near the end so the whole stack visibly "clears" before building again. */
+@keyframes book-stack-slot-1 {
+  0% { opacity: 0; transform: translate(-50%, 10px) scale(0.85); }
+  8% { opacity: 1; transform: translate(-51%, 0) rotate(-2deg) scale(1); }
+  82% { opacity: 1; transform: translate(-51%, 0) rotate(-2deg) scale(1); }
+  92%, 100% { opacity: 0; transform: translate(-50%, -6px) scale(0.9); }
+}
+
+@keyframes book-stack-slot-2 {
+  0%, 10% { opacity: 0; transform: translate(-50%, 10px) scale(0.85); }
+  18% { opacity: 1; transform: translate(-49%, 0) rotate(1.5deg) scale(1); }
+  82% { opacity: 1; transform: translate(-49%, 0) rotate(1.5deg) scale(1); }
+  92%, 100% { opacity: 0; transform: translate(-50%, -6px) scale(0.9); }
+}
+
+@keyframes book-stack-slot-3 {
+  0%, 20% { opacity: 0; transform: translate(-50%, 10px) scale(0.85); }
+  28% { opacity: 1; transform: translate(-50%, 0) rotate(-1deg) scale(1); }
+  82% { opacity: 1; transform: translate(-50%, 0) rotate(-1deg) scale(1); }
+  92%, 100% { opacity: 0; transform: translate(-50%, -6px) scale(0.9); }
+}
+
+@keyframes book-stack-slot-4 {
+  0%, 30% { opacity: 0; transform: translate(-50%, 10px) scale(0.85); }
+  38% { opacity: 1; transform: translate(-52%, 0) rotate(2deg) scale(1); }
+  82% { opacity: 1; transform: translate(-52%, 0) rotate(2deg) scale(1); }
+  92%, 100% { opacity: 0; transform: translate(-50%, -6px) scale(0.9); }
+}
+
+@keyframes book-stack-slot-5 {
+  0%, 40% { opacity: 0; transform: translate(-50%, 10px) scale(0.85); }
+  48% { opacity: 1; transform: translate(-48%, 0) rotate(-1.5deg) scale(1); }
+  82% { opacity: 1; transform: translate(-48%, 0) rotate(-1.5deg) scale(1); }
+  92%, 100% { opacity: 0; transform: translate(-50%, -6px) scale(0.9); }
+}
+
+.book-stack-loader__text {
+  margin: 0;
+  color: var(--color-text-muted);
+  font-size: 0.95rem;
+  animation: book-stack-text-pulse 2s ease-in-out infinite;
+}
+
+@keyframes book-stack-text-pulse {
+  0%, 100% { opacity: 0.6; }
+  50% { opacity: 1; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .book-stack-loader__book,
+  .book-stack-loader__text {
+    animation: none;
+  }
+  .book-stack-loader__book {
+    opacity: 1;
+    transform: translate(-50%, 0);
+  }
+}

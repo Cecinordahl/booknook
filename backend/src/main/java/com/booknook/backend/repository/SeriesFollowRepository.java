@@ -35,10 +35,6 @@ public class SeriesFollowRepository {
         return follow;
     }
 
-    public void deleteByUserAndSeries(String userUid, String seriesId) throws ExecutionException, InterruptedException {
-        collection().document(SeriesFollow.buildId(userUid, seriesId)).delete().get();
-    }
-
     public List<SeriesFollow> findByUser(String userUid) throws ExecutionException, InterruptedException {
         QuerySnapshot snapshot = collection().whereEqualTo("userUid", userUid).get().get();
         return snapshot.getDocuments().stream().map(doc -> doc.toObject(SeriesFollow.class)).collect(Collectors.toList());

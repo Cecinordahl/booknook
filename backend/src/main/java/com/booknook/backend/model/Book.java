@@ -27,7 +27,7 @@ public class Book {
     private Double personalRating;
 
     private String seriesId;
-    private Integer seriesPosition;
+    private Double seriesPosition;
 
     /** ID of the matching work in Hardcover's catalog, if one was found — used to resolve series data. */
     private String hardcoverBookId;
@@ -158,11 +158,12 @@ public class Book {
         this.seriesId = seriesId;
     }
 
-    public Integer getSeriesPosition() {
+    /** Double, not Integer — Hardcover uses fractional positions for novellas/side stories (e.g. 3.5). */
+    public Double getSeriesPosition() {
         return seriesPosition;
     }
 
-    public void setSeriesPosition(Integer seriesPosition) {
+    public void setSeriesPosition(Double seriesPosition) {
         this.seriesPosition = seriesPosition;
     }
 

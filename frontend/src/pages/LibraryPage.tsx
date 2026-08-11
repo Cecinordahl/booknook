@@ -3,7 +3,7 @@ import { booksApi } from "../api/books";
 import { seriesApi } from "../api/series";
 import { FilterBar } from "../components/FilterBar";
 import { BookCard } from "../components/BookCard";
-import { SeriesFollowSearch } from "../components/SeriesFollowSearch";
+import { FollowedSeriesPanel } from "../components/FollowedSeriesPanel";
 import type { Book, BookFilter, SeriesFollowView } from "../types";
 
 export function LibraryPage() {
@@ -22,34 +22,32 @@ export function LibraryPage() {
       .finally(() => setLoading(false));
   }, [filter]);
 
-  useEffect(() => {
-    seriesApi.followed().then(setFollowed).catch(() => setFollowed([]));
-  }, []);
-
   function reloadFollowed() {
     seriesApi.followed().then(setFollowed).catch(() => setFollowed([]));
   }
 
-  const upcoming = followed.filter((f) => f.nextReleaseDate).sort((a, b) => (a.nextReleaseDate! < b.nextReleaseDate! ? -1 : 1));
+  useEffect(() => {
+    reloadFollowed();
+  }, []);
+
+  async function handleDelete(book: Book) {
+    if (!window.confirm(`Remove "${book.title}" from your library? This can't be undone.`)) {
+      return;
+    }
+    try {
+      await booksApi.remove(book.id);
+      setBooks((current) => current.filter((b) => b.id !== book.id));
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "Could not remove this book.");
+    }
+  }
 
   return (
     <div className="page">
       <h1>Library</h1>
 
-      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16, marginBottom: 20 }}>
-        {upcoming.length > 0 && (
-          <div className="card">
-            <h3 style={{ marginTop: 0 }}>Next in series you follow</h3>
-            <ul style={{ margin: 0, paddingLeft: 20 }}>
-              {upcoming.map((s) => (
-                <li key={s.seriesId}>
-                  <strong>{s.seriesName}</strong> — {s.nextReleaseTitle} ({s.nextReleaseDate})
-                </li>
-              ))}
-            </ul>
-          </div>
-        )}
-        <SeriesFollowSearch onFollowed={reloadFollowed} />
+      <div style={{ marginBottom: 20 }}>
+        <FollowedSeriesPanel followed={followed} onChanged={reloadFollowed} />
       </div>
 
       <div style={{ marginBottom: 20 }}>
@@ -61,7 +59,7 @@ export function LibraryPage() {
 
       <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
         {books.map((book) => (
-          <BookCard key={book.id} book={book} />
+          <BookCard key={book.id} book={book} onDelete={handleDelete} />
         ))}
         {!loading && books.length === 0 && <p>No books match these filters.</p>}
       </div>

@@ -3,7 +3,6 @@ package com.booknook.backend.model;
 import com.google.cloud.firestore.annotation.DocumentId;
 
 import java.time.Instant;
-import java.time.LocalDate;
 
 public class Series {
 
@@ -13,6 +12,8 @@ public class Series {
     private String name;
     private String hardcoverSeriesId;
     private CachedNextRelease cachedNextRelease;
+    /** Null until the first cache refresh — Hardcover doesn't always have this set either. */
+    private Boolean isCompleted;
 
     public Series() {
     }
@@ -49,16 +50,32 @@ public class Series {
         this.cachedNextRelease = cachedNextRelease;
     }
 
-    /** Cached result of the last Hardcover lookup, refreshed when {@code fetchedAt} goes stale. */
+    public Boolean getIsCompleted() {
+        return isCompleted;
+    }
+
+    public void setIsCompleted(Boolean isCompleted) {
+        this.isCompleted = isCompleted;
+    }
+
+    /**
+     * Cached result of the last Hardcover lookup, refreshed when {@code fetchedAt} goes stale.
+     *
+     * <p>{@code releaseDate} is stored as an ISO-8601 string ("2026-12-01"), not a
+     * {@code java.time.LocalDate} — the Firestore Java SDK's POJO mapper can't serialize
+     * {@code LocalDate} (throws "Found conflicting getters for name getEra", a reflection
+     * ambiguity in its bean-mapping code, not something we can annotate around). Callers parse
+     * with {@code LocalDate.parse(...)} at the boundary where they need date arithmetic.
+     */
     public static class CachedNextRelease {
         private String title;
-        private LocalDate releaseDate;
+        private String releaseDate;
         private Instant fetchedAt;
 
         public CachedNextRelease() {
         }
 
-        public CachedNextRelease(String title, LocalDate releaseDate, Instant fetchedAt) {
+        public CachedNextRelease(String title, String releaseDate, Instant fetchedAt) {
             this.title = title;
             this.releaseDate = releaseDate;
             this.fetchedAt = fetchedAt;
@@ -72,11 +89,11 @@ public class Series {
             this.title = title;
         }
 
-        public LocalDate getReleaseDate() {
+        public String getReleaseDate() {
             return releaseDate;
         }
 
-        public void setReleaseDate(LocalDate releaseDate) {
+        public void setReleaseDate(String releaseDate) {
             this.releaseDate = releaseDate;
         }
 

@@ -15,12 +15,19 @@ import static org.mockito.Mockito.when;
 
 class BookServiceTest {
 
+    private static BookService newService(BookRepository repository) {
+        // Book auto-series-tagging only runs when the book has an ISBN — none of these tests set
+        // one, so plain (unstubbed) mocks are enough; attachSeriesIfKnown short-circuits before
+        // touching either collaborator.
+        return new BookService(repository, mock(BookLookupService.class), mock(SeriesService.class));
+    }
+
     @Test
     void createStampsOwnerAndTimestamps() throws Exception {
         BookRepository repository = mock(BookRepository.class);
         when(repository.save(any(Book.class))).thenAnswer(invocation -> invocation.getArgument(0));
 
-        BookService service = new BookService(repository);
+        BookService service = newService(repository);
         Book input = new Book();
         input.setTitle("Some Title");
 
@@ -37,7 +44,7 @@ class BookServiceTest {
         BookRepository repository = mock(BookRepository.class);
         when(repository.findById("missing")).thenReturn(Optional.empty());
 
-        BookService service = new BookService(repository);
+        BookService service = newService(repository);
 
         assertThrows(ResourceNotFoundException.class, () -> service.get("owner-1", "missing"));
     }
@@ -51,7 +58,7 @@ class BookServiceTest {
         BookRepository repository = mock(BookRepository.class);
         when(repository.findById("book-1")).thenReturn(Optional.of(book));
 
-        BookService service = new BookService(repository);
+        BookService service = newService(repository);
 
         assertThrows(ForbiddenException.class, () -> service.get("someone-else", "book-1"));
     }
@@ -65,7 +72,7 @@ class BookServiceTest {
         BookRepository repository = mock(BookRepository.class);
         when(repository.findById("book-1")).thenReturn(Optional.of(book));
 
-        BookService service = new BookService(repository);
+        BookService service = newService(repository);
         service.delete("owner-1", "book-1");
         // no exception thrown means the ownership check passed and deleteById was reached
     }

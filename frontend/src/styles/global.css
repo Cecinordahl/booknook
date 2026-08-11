@@ -121,6 +121,19 @@ a {
   border-color: var(--color-danger);
 }
 
+/* Passive "done" state (e.g. already-followed) — inverted from .btn's solid accent so it
+   reads as a completed state rather than an available action. */
+.btn.followed {
+  background: transparent;
+  border-color: var(--color-success);
+  color: var(--color-success);
+  cursor: default;
+}
+
+.book-card-delete:hover {
+  color: var(--color-danger);
+}
+
 .btn:disabled {
   opacity: 0.5;
   cursor: not-allowed;

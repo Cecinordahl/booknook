@@ -179,9 +179,11 @@ allowlisted email, and add your first book.
   private endpoints in violation of their Terms of Service. See
   `backend/src/main/java/com/booknook/backend/future/AudibleSyncStub.java` for the full rationale.
   The outbound Audible/Kindle links are the supported alternative.
-- **Hardcover GraphQL query shapes** in `HardcoverClient.java` are a best-effort mapping based on
-  Hardcover's publicly documented schema. Sanity-check them against your API key's schema
-  (https://api.hardcover.app) if series search or release lookups don't behave as expected.
+- **Hardcover GraphQL queries** in `HardcoverClient.java` are verified against the live schema
+  (confirmed via introspection and real requests, not just Hardcover's docs) — series search uses
+  a Typesense-style `search.results.hits[].document` shape, and release dates are reached via
+  `series_by_pk(id: ...)` → `book_series` → `book { release_date }`. If Hardcover changes their
+  schema later, this is the one place to update.
 - The frontend's production build reports one large JS chunk (~800KB, mostly Firebase +
   Tesseract.js + the barcode scanner). Fine for this app's scale; if it becomes a problem,
   code-splitting the OCR/scanner flows behind `import()` is the first thing to try.

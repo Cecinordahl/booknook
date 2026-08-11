@@ -7,6 +7,7 @@ import { NotInvitedPage } from "./pages/NotInvitedPage";
 import { BookshelfLandingPage } from "./pages/BookshelfLandingPage";
 import { LibraryPage } from "./pages/LibraryPage";
 import { BookDetailPage } from "./pages/BookDetailPage";
+import { SeriesDetailPage } from "./pages/SeriesDetailPage";
 import { AddBookPage } from "./pages/AddBookPage";
 import { SettingsPage } from "./pages/SettingsPage";
 import { PrivacyNoticePage } from "./pages/PrivacyNoticePage";
@@ -59,6 +60,14 @@ export default function App() {
           element={
             <ProtectedRoute>
               <BookDetailPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/series/:id"
+          element={
+            <ProtectedRoute>
+              <SeriesDetailPage />
             </ProtectedRoute>
           }
         />

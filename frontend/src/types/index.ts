@@ -48,16 +48,20 @@ export interface BookFilter {
   sortDescending?: boolean;
 }
 
-export interface HardcoverSeriesMatch {
-  hardcoverSeriesId: string;
-  name: string;
-}
-
 export interface SeriesFollowView {
   seriesId: string;
   seriesName: string;
   nextReleaseTitle?: string;
   nextReleaseDate?: string;
+  isCompleted?: boolean | null;
+  discarded: boolean;
+}
+
+export interface HardcoverSeriesBook {
+  title: string;
+  coverImageUrl?: string;
+  releaseDate?: string;
+  position?: number;
 }
 
 export interface UserAccount {

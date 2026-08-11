@@ -14,6 +14,7 @@ public class SeriesFollow {
     private String seriesId;
     private Instant followedAt;
     private NotificationStage lastNotifiedStage = NotificationStage.NONE;
+    private FollowStatus status = FollowStatus.ACTIVE;
 
     public SeriesFollow() {
     }
@@ -60,5 +61,13 @@ public class SeriesFollow {
 
     public void setLastNotifiedStage(NotificationStage lastNotifiedStage) {
         this.lastNotifiedStage = lastNotifiedStage;
+    }
+
+    public FollowStatus getStatus() {
+        return status;
+    }
+
+    public void setStatus(FollowStatus status) {
+        this.status = status;
     }
 }

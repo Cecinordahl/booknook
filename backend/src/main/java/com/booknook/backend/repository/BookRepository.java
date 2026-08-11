@@ -5,10 +5,11 @@ import com.booknook.backend.model.Book;
 import com.google.cloud.firestore.CollectionReference;
 import com.google.cloud.firestore.DocumentSnapshot;
 import com.google.cloud.firestore.Firestore;
-import com.google.cloud.firestore.Query;
 import com.google.cloud.firestore.QuerySnapshot;
 import org.springframework.stereotype.Repository;
 
+import java.time.Instant;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.ExecutionException;
@@ -47,55 +48,35 @@ public class BookRepository {
         collection().document(id).delete().get();
     }
 
+    /**
+     * Filters and sorts entirely in memory after a single ownerUid-only fetch, rather than
+     * pushing filter/orderBy combinations into the Firestore query. Firestore requires a
+     * purpose-built composite index for every distinct combination of equality/range/orderBy
+     * fields used together — with 6+ filterable fields and 5 sortable ones here, that's a
+     * combinatorial number of indexes to predict and pre-create, and an un-provisioned one fails
+     * the whole request (a real bug hit in practice, not theoretical). At this app's scale (one
+     * person's library, realistically low hundreds of books) fetching by owner and filtering in
+     * Java is simpler and needs zero composite indexes — Firestore always has the single-field
+     * ownerUid index automatically.
+     */
     public List<Book> findByOwner(String ownerUid, BookFilter filter) throws ExecutionException, InterruptedException {
-        Query query = collection().whereEqualTo("ownerUid", ownerUid);
-
-        if (filter.getGenre() != null) {
-            query = query.whereEqualTo("genre", filter.getGenre());
-        }
-        if (filter.getStatus() != null) {
-            query = query.whereEqualTo("status", filter.getStatus().name());
-        }
-        if (filter.getFormat() != null) {
-            query = query.whereEqualTo("format", filter.getFormat().name());
-        }
-        if (filter.getMoodTags() != null && !filter.getMoodTags().isEmpty()) {
-            query = query.whereArrayContainsAny("moodTags", filter.getMoodTags());
-        }
-
-        // Firestore allows only one range-filtered field per query — apply the first one present
-        // server-side; any others in the filter are applied in-memory below.
-        if (filter.getMinPageCount() != null || filter.getMaxPageCount() != null) {
-            query = rangeFilter(query, "pageCount", filter.getMinPageCount(), filter.getMaxPageCount());
-        } else if (filter.getMinPublicationYear() != null || filter.getMaxPublicationYear() != null) {
-            query = rangeFilter(query, "publicationYear", filter.getMinPublicationYear(), filter.getMaxPublicationYear());
-        } else if (filter.getMinRating() != null) {
-            query = query.whereGreaterThanOrEqualTo("personalRating", filter.getMinRating());
-        }
-
-        query = query.orderBy(filter.getSortBy(),
-                filter.isSortDescending() ? Query.Direction.DESCENDING : Query.Direction.ASCENDING);
-
-        QuerySnapshot snapshot = query.get().get();
+        QuerySnapshot snapshot = collection().whereEqualTo("ownerUid", ownerUid).get().get();
         List<Book> books = snapshot.getDocuments().stream()
                 .map(doc -> doc.toObject(Book.class))
                 .collect(Collectors.toList());
 
-        return applyInMemoryFallback(books, filter);
+        List<Book> filtered = applyFilters(books, filter);
+        filtered.sort(comparatorFor(filter));
+        return filtered;
     }
 
-    private Query rangeFilter(Query query, String field, Number min, Number max) {
-        if (min != null) {
-            query = query.whereGreaterThanOrEqualTo(field, min);
-        }
-        if (max != null) {
-            query = query.whereLessThanOrEqualTo(field, max);
-        }
-        return query;
-    }
-
-    private List<Book> applyInMemoryFallback(List<Book> books, BookFilter filter) {
+    private List<Book> applyFilters(List<Book> books, BookFilter filter) {
         return books.stream()
+                .filter(b -> filter.getGenre() == null || filter.getGenre().equalsIgnoreCase(b.getGenre()))
+                .filter(b -> filter.getStatus() == null || filter.getStatus() == b.getStatus())
+                .filter(b -> filter.getFormat() == null || filter.getFormat() == b.getFormat())
+                .filter(b -> filter.getMoodTags() == null || filter.getMoodTags().isEmpty()
+                        || (b.getMoodTags() != null && b.getMoodTags().stream().anyMatch(filter.getMoodTags()::contains)))
                 .filter(b -> filter.getMinPageCount() == null || b.getPageCount() == null
                         || b.getPageCount() >= filter.getMinPageCount())
                 .filter(b -> filter.getMaxPageCount() == null || b.getPageCount() == null
@@ -107,6 +88,17 @@ public class BookRepository {
                 .filter(b -> filter.getMinRating() == null || b.getPersonalRating() == null
                         || b.getPersonalRating() >= filter.getMinRating())
                 .collect(Collectors.toList());
+    }
+
+    private Comparator<Book> comparatorFor(BookFilter filter) {
+        Comparator<Book> comparator = switch (filter.getSortBy() == null ? "addedAt" : filter.getSortBy()) {
+            case "title" -> Comparator.comparing(Book::getTitle, Comparator.nullsLast(String::compareToIgnoreCase));
+            case "publicationYear" -> Comparator.comparing(Book::getPublicationYear, Comparator.nullsLast(Comparator.naturalOrder()));
+            case "personalRating" -> Comparator.comparing(Book::getPersonalRating, Comparator.nullsLast(Comparator.naturalOrder()));
+            case "pageCount" -> Comparator.comparing(Book::getPageCount, Comparator.nullsLast(Comparator.naturalOrder()));
+            default -> Comparator.comparing(Book::getAddedAt, Comparator.nullsLast(Comparator.<Instant>naturalOrder()));
+        };
+        return filter.isSortDescending() ? comparator.reversed() : comparator;
     }
 
     public List<Book> findBySeriesId(String ownerUid, String seriesId) throws ExecutionException, InterruptedException {

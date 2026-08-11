@@ -1,7 +1,7 @@
 package com.booknook.backend.service;
 
 import com.booknook.backend.config.BooknookProperties;
-import com.booknook.backend.dto.HardcoverNextRelease;
+import com.booknook.backend.dto.HardcoverSeriesStatus;
 import com.booknook.backend.model.Series;
 import com.booknook.backend.repository.SeriesRepository;
 import org.slf4j.Logger;
@@ -14,8 +14,9 @@ import java.util.Optional;
 import java.util.concurrent.ExecutionException;
 
 /**
- * Keeps {@link Series#getCachedNextRelease()} reasonably fresh without hitting Hardcover on
- * every request — refetches only when the cached value is older than the configured TTL.
+ * Keeps {@link Series#getCachedNextRelease()} (and completion status) reasonably fresh without
+ * hitting Hardcover on every request — refetches only when the cached value is older than the
+ * configured TTL.
  */
 @Service
 public class SeriesCacheService {
@@ -42,12 +43,16 @@ public class SeriesCacheService {
             return series;
         }
 
-        Optional<HardcoverNextRelease> next = hardcoverClient.getNextRelease(series.getHardcoverSeriesId());
-        Series.CachedNextRelease updated = next
-                .map(r -> new Series.CachedNextRelease(r.title(), r.releaseDate(), Instant.now()))
+        Optional<HardcoverSeriesStatus> status = hardcoverClient.getSeriesStatus(series.getHardcoverSeriesId());
+        Series.CachedNextRelease updated = status
+                .map(s -> new Series.CachedNextRelease(
+                        s.nextReleaseTitle(),
+                        s.nextReleaseDate() != null ? s.nextReleaseDate().toString() : null,
+                        Instant.now()))
                 .orElse(new Series.CachedNextRelease(null, null, Instant.now()));
 
         series.setCachedNextRelease(updated);
+        series.setIsCompleted(status.map(HardcoverSeriesStatus::isCompleted).orElse(null));
         seriesRepository.save(series);
         log.debug("Refreshed release-date cache for series {}", series.getId());
         return series;

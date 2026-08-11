@@ -1,7 +1,6 @@
 package com.booknook.backend.controller;
 
-import com.booknook.backend.dto.FollowSeriesRequest;
-import com.booknook.backend.dto.HardcoverSeriesMatch;
+import com.booknook.backend.dto.HardcoverSeriesBook;
 import com.booknook.backend.dto.SeriesFollowView;
 import com.booknook.backend.security.FirebaseAuthenticatedUser;
 import com.booknook.backend.service.SeriesService;
@@ -11,6 +10,12 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
 
+/**
+ * Series are attached to a user's library automatically when a book with a resolved series is
+ * added (see {@code BookService#create}) — there's no manual "search for a series" endpoint
+ * anymore, since Hardcover's series search index is too noisy (books showing up as series
+ * results, heavy duplication) to expose directly.
+ */
 @RestController
 @RequestMapping("/api/series")
 public class SeriesController {
@@ -21,15 +26,21 @@ public class SeriesController {
         this.seriesService = seriesService;
     }
 
-    @GetMapping("/search")
-    public List<HardcoverSeriesMatch> search(@RequestParam String q) {
-        return seriesService.search(q);
+    @GetMapping("/followed")
+    public List<SeriesFollowView> followed(@AuthenticationPrincipal FirebaseAuthenticatedUser principal)
+            throws ExecutionException, InterruptedException {
+        return seriesService.listFollowed(principal.uid());
     }
 
-    @PostMapping("/follow")
-    public void follow(@AuthenticationPrincipal FirebaseAuthenticatedUser principal,
-                        @RequestBody FollowSeriesRequest request) throws ExecutionException, InterruptedException {
-        seriesService.follow(principal.uid(), request.hardcoverSeriesId(), request.seriesName());
+    @GetMapping("/{seriesId}")
+    public SeriesFollowView get(@AuthenticationPrincipal FirebaseAuthenticatedUser principal, @PathVariable String seriesId)
+            throws ExecutionException, InterruptedException {
+        return seriesService.getSeriesDetail(principal.uid(), seriesId);
+    }
+
+    @GetMapping("/{seriesId}/books")
+    public List<HardcoverSeriesBook> books(@PathVariable String seriesId) throws ExecutionException, InterruptedException {
+        return seriesService.listSeriesBooks(seriesId);
     }
 
     @DeleteMapping("/{seriesId}/follow")
@@ -38,9 +49,9 @@ public class SeriesController {
         seriesService.unfollow(principal.uid(), seriesId);
     }
 
-    @GetMapping("/followed")
-    public List<SeriesFollowView> followed(@AuthenticationPrincipal FirebaseAuthenticatedUser principal)
+    @PostMapping("/{seriesId}/reactivate")
+    public void reactivate(@AuthenticationPrincipal FirebaseAuthenticatedUser principal, @PathVariable String seriesId)
             throws ExecutionException, InterruptedException {
-        return seriesService.listFollowedWithNextRelease(principal.uid());
+        seriesService.reactivate(principal.uid(), seriesId);
     }
 }

@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
-import { useNavigate, useParams } from "react-router-dom";
+import { Link, useNavigate, useParams } from "react-router-dom";
 import { booksApi } from "../api/books";
+import { seriesApi } from "../api/series";
 import { OutboundLinks } from "../components/OutboundLinks";
 import { ProgressBar } from "../components/ProgressBar";
 import type { Book, BookStatus } from "../types";
@@ -11,6 +12,7 @@ export function BookDetailPage() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const [book, setBook] = useState<Book | null>(null);
+  const [seriesName, setSeriesName] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -21,6 +23,14 @@ export function BookDetailPage() {
       .then(setBook)
       .catch((e) => setError(e instanceof Error ? e.message : "Could not load this book."));
   }, [id]);
+
+  useEffect(() => {
+    if (!book?.seriesId) {
+      setSeriesName(null);
+      return;
+    }
+    seriesApi.get(book.seriesId).then((s) => setSeriesName(s.seriesName)).catch(() => setSeriesName(null));
+  }, [book?.seriesId]);
 
   async function save(updates: Partial<Book>) {
     if (!book) return;
@@ -49,6 +59,12 @@ export function BookDetailPage() {
     <div className="page" style={{ maxWidth: 640 }}>
       <h1>{book.title}</h1>
       <p style={{ color: "var(--color-text-muted)" }}>{book.authors?.join(", ")}</p>
+      {book.seriesId && seriesName && (
+        <p>
+          Part of <Link to={`/series/${book.seriesId}`}>{seriesName}</Link>
+          {book.seriesPosition != null ? ` (#${book.seriesPosition})` : ""}
+        </p>
+      )}
 
       <div className="card" style={{ display: "flex", flexDirection: "column", gap: 14 }}>
         <label>

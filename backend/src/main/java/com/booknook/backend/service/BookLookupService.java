@@ -1,6 +1,7 @@
 package com.booknook.backend.service;
 
 import com.booknook.backend.dto.BookMetadataSuggestion;
+import com.booknook.backend.dto.HardcoverBookSeriesMatch;
 import com.booknook.backend.model.IsbnLookupCache;
 import com.booknook.backend.repository.IsbnLookupCacheRepository;
 import org.slf4j.Logger;
@@ -24,12 +25,14 @@ public class BookLookupService {
     private final GoogleBooksClient googleBooksClient;
     private final OpenLibraryClient openLibraryClient;
     private final IsbnLookupCacheRepository cacheRepository;
+    private final HardcoverClient hardcoverClient;
 
     public BookLookupService(GoogleBooksClient googleBooksClient, OpenLibraryClient openLibraryClient,
-                              IsbnLookupCacheRepository cacheRepository) {
+                              IsbnLookupCacheRepository cacheRepository, HardcoverClient hardcoverClient) {
         this.googleBooksClient = googleBooksClient;
         this.openLibraryClient = openLibraryClient;
         this.cacheRepository = cacheRepository;
+        this.hardcoverClient = hardcoverClient;
     }
 
     public Optional<BookMetadataSuggestion> lookupByIsbn(String isbn) {
@@ -71,5 +74,9 @@ public class BookLookupService {
      */
     public List<BookMetadataSuggestion> searchByTitle(String query) {
         return googleBooksClient.searchByTitle(query);
+    }
+
+    public Optional<HardcoverBookSeriesMatch> findSeriesForIsbn(String isbn) {
+        return hardcoverClient.findSeriesForIsbn(isbn);
     }
 }

@@ -38,10 +38,11 @@ async function request<T>(path: string, init?: RequestInit): Promise<T> {
     throw new ApiError(response.status, code, message);
   }
 
-  if (response.status === 204) {
-    return undefined as T;
-  }
-  return response.json() as Promise<T>;
+  // Don't key off status 204 specifically — Spring returns 200 with an empty body for `void`
+  // controller methods (follow/unfollow, push subscribe, account delete, ...), and calling
+  // response.json() on an empty body throws. Read as text first and only parse if non-empty.
+  const text = await response.text();
+  return (text ? JSON.parse(text) : undefined) as T;
 }
 
 export const api = {

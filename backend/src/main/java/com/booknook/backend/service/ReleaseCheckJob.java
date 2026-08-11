@@ -1,5 +1,6 @@
 package com.booknook.backend.service;
 
+import com.booknook.backend.model.FollowStatus;
 import com.booknook.backend.model.NotificationStage;
 import com.booknook.backend.model.Series;
 import com.booknook.backend.model.SeriesFollow;
@@ -48,6 +49,9 @@ public class ReleaseCheckJob {
             Map<String, Series> seriesCache = new HashMap<>();
 
             for (SeriesFollow follow : follows) {
+                if (follow.getStatus() != FollowStatus.ACTIVE) {
+                    continue;
+                }
                 Series series = seriesCache.computeIfAbsent(follow.getSeriesId(), this::loadAndRefresh);
                 if (series == null || series.getCachedNextRelease() == null
                         || series.getCachedNextRelease().getReleaseDate() == null) {
@@ -81,7 +85,7 @@ public class ReleaseCheckJob {
     }
 
     private void processFollow(SeriesFollow follow, Series series) throws ExecutionException, InterruptedException {
-        LocalDate releaseDate = series.getCachedNextRelease().getReleaseDate();
+        LocalDate releaseDate = LocalDate.parse(series.getCachedNextRelease().getReleaseDate());
         LocalDate today = LocalDate.now();
         String seriesName = series.getName();
 
